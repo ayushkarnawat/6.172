@@ -27,9 +27,9 @@ QUIET = False
 def print_result(result):
     """If result is True, print a green PASSED or red FAILED line otherwise."""
     if result:
-        print GREEN + 'PASSED' + END
+        print(GREEN + 'PASSED' + END)
     else:
-        print RED + 'FAILED' + END
+        print(RED + 'FAILED' + END)
 
 
 def wait_for_test_process(proc, timeout):
@@ -51,14 +51,14 @@ def wait_for_test_process(proc, timeout):
         proc.kill()
         proc.wait()
         timed_out = True
-        print 'Test process timed out after 30s...'
+        print('Test process timed out after 30s...')
 
     # Read the rest of stderr.
     chunk = True
     while chunk:
         chunk = os.read(proc.stderr.fileno(), 4096)
         err_chunks.append(chunk)
-    lines = ''.join(err_chunks).split('\n')
+    lines = b''.join(err_chunks).decode("utf-8").split('\n')
     return (timed_out, lines)
 
 
@@ -77,7 +77,7 @@ def test_project1(binary):
     for filename in test_files:
       testfileNameBegin = len(filename) - filename[::-1].index('/')
       if filename[testfileNameBegin] == '.':
-        print "Skipping file beginning with '.'"
+        print("Skipping file beginning with '.'")
         continue
       done_testing = False
       test_index = 0
@@ -90,8 +90,8 @@ def test_project1(binary):
         # Interpret each line.
         for lineIndex in range(0, len(lines)):
             line = lines[lineIndex]
-            lineIndex += 1;
-            match = re.match('Running test #(\d+)\.\.\.', line)
+            lineIndex += 1
+            match = re.match(r'Running test #(\d+)\.\.\.', line)
             if match:
                 test_index = int(match.group(1))
             match = re.match(' --> (.*): (PASS|FAIL)', line)
@@ -104,15 +104,14 @@ def test_project1(binary):
                 # NOTE(TFK): Added 'or' to print failed tests.
                 if not QUIET or (QUIET and not passed):
                     testname = os.path.basename(binary) + ' ' + match.group(1)
-                    print testname.ljust(64),
-                    print_result(passed)
+                    print(testname.ljust(64), print_result(passed))
                 if not passed:
-                    print lines[lineIndex];
-                    lineIndex += 1;
-                    print lines[lineIndex];
-                    lineIndex += 1;
-                    print lines[lineIndex];
-                    lineIndex += 1;
+                    print(lines[lineIndex])
+                    lineIndex += 1
+                    print(lines[lineIndex])
+                    lineIndex += 1
+                    print(lines[lineIndex])
+                    lineIndex += 1
             if line.startswith('Done testing'):
                 test_index_total += (test_index + 1)
                 done_testing = True
@@ -122,7 +121,7 @@ def test_project1(binary):
             test_index += 1
             num_failed += 1
         elif proc.returncode != 0:
-            print 'Nonzero return code.'
+            print('Nonzero return code.')
             done_testing = True
             test_index += 1
             num_failed += 1
@@ -130,15 +129,14 @@ def test_project1(binary):
     # NOTE(TFK): No need for this when we're printing failed tests above.
     if QUIET and False:
         testname = os.path.basename(binary)
-        print testname.ljust(64),
-        print_result(num_failed == 0)
+        print(testname.ljust(64), print_result(num_failed == 0))
 
     return (test_index_total, num_passed, num_failed)
 
 
 def main(argv):
     if len(argv) < 2:
-        print 'Usage: test.py [--quiet] <binary> ...'
+        print('Usage: test.py [--quiet] <binary> ...')
         sys.exit(1)
     args = argv[1:]
     if '--quiet' in args:
@@ -154,9 +152,9 @@ def main(argv):
         total_tests += num_tests
         total_passes += num_passes
         total_failed += num_failed
-    print ('Ran %d test functions, %d individual tests passed, '
-           '%d individual tests failed.' % (total_tests-1, total_passes,
-                                            total_failed))
+    print('Ran %d test functions, %d individual tests passed, '
+          '%d individual tests failed.' % (total_tests-1, total_passes,
+                                           total_failed))
     print_result(total_failed == 0)
 
 
