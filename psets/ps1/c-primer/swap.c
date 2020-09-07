@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-void swap(int* i, int* j) {
-  int temp = *i;
+void swap(int *i, int *j) {
+  int tmp = *i;
   *i = *j;
-  *j = temp;
+  *j = tmp;
 }
 
 int main(int argc, char *argv[]) {

@@ -28,5 +28,6 @@ swap.o: swap.c
 
 swap: swap.o
 	$(CC) -o swap swap.o $(LDFLAGS)
+
 clean:
 	rm -f sizes pointer swap *.o *.gcda *.gcno *.gcov perf.data */perf.data cachegrind.out.*
