@@ -160,5 +160,10 @@ int main(int argc, char** argv) {
     printf("Elapsed execution time: %f sec\n", elapsed);
   }
 
+  // Free allocated memory
+  free_matrix(A);
+  free_matrix(B);
+  free_matrix(C);
+
   return 0;
 }
