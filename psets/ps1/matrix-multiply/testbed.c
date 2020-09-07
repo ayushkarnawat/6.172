@@ -52,7 +52,6 @@ int main(int argc, char** argv) {
 
   const int kMatrixSize = 4;
 
-
   // Parse command line arguments
   while ((optchar = getopt(argc, argv, "upz")) != -1) {
     switch (optchar) {
@@ -96,6 +95,7 @@ int main(int argc, char** argv) {
   B = make_matrix(kMatrixSize, kMatrixSize);
   C = make_matrix(kMatrixSize, kMatrixSize);
 
+  // Init values (in matrices) before using them
   if (use_zero_matrix) {
     for (int i = 0; i < A->rows; i++) {
       for (int j = 0; j < A->cols; j++) {
@@ -107,6 +107,11 @@ int main(int argc, char** argv) {
         B->values[i][j] = 0;
       }
     }
+    for (int i = 0; i < C->rows; i++) {
+      for (int j = 0; j < C->cols; j++) {
+        C->values[i][j] = 0;
+      }
+    }
   } else {
     for (int i = 0; i < A->rows; i++) {
       for (int j = 0; j < A->cols; j++) {
@@ -116,6 +121,11 @@ int main(int argc, char** argv) {
     for (int i = 0; i < B->rows; i++) {
       for (int j = 0; j < B->cols; j++) {
         B->values[i][j] = rand_r(&randomSeed) % 10;
+      }
+    }
+    for (int i = 0; i < C->rows; i++) {
+      for (int j = 0; j < C->cols; j++) {
+        C->values[i][j] = 0;
       }
     }
   }
