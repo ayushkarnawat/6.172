@@ -51,8 +51,20 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# Profiling files
+*.gcda
+*.gcno
+*.gcov
+*/perf.data
+cachegrind.out.*
+
+# Project files
+*.buildmode
+*.cflags
+clint.py
+
 # MacOS
 .DS_Store
 
-# Project files
-clint.py
+# VS Code
+.vscode/*
