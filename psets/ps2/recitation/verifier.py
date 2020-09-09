@@ -2,7 +2,7 @@
 import subprocess, os, sys, re
 
 def exitWithError(error):
-    print error
+    print(error)
     sys.exit(1)
 
 def runAndReadOutput(args):
@@ -10,10 +10,11 @@ def runAndReadOutput(args):
         args = [args]
     try:
         return subprocess.check_output(args)
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         exitWithError("ERROR: runtime error with %s" % str(args))
 
-def run(path): runAndReadOutput(path)
+def run(path):
+    runAndReadOutput(path)
 
 def runAndCheckSizes():
     output = runAndReadOutput("./sizes")
@@ -44,7 +45,7 @@ def runAndCheckSizes():
     ]
 
     for typ in types:
-        print (expected_output_format % typ)
+        print(expected_output_format % typ)
         if (expected_output_format % typ) not in lines:
             exitWithError("ERROR: couldn't find type %s (or it has the incorrect value) in sizes output" % typ[0])
 
@@ -56,34 +57,34 @@ def runAndCheckSwap():
         exitWithError('ERROR: actual output: "%s", expected "%s"' % (output, expected_output))
 
 def build(make_arg, filename):
-    print "\nRunning make %s ... " % make_arg
+    print("\nRunning make %s ... " % make_arg)
     run(["make", filename])
-    print "Ok!"
+    print("Ok!")
 
-    print "\nChecking that %s was built ... " % filename
+    print("\nChecking that %s was built ... " % filename)
     if not os.path.isfile(filename):
         exitWithError("ERROR: %s binary missing, did you rename it?" % filename)
-    print "Ok!"
+    print("Ok!")
 
 
-print "Running verifying script ... "
+print("Running verifying script ... ")
 
-print "\nChecking that the Makefile exists ... "
+print("\nChecking that the Makefile exists ... ")
 if not os.path.isfile('Makefile'):
     exitWithError('ERROR: Makefile does not exist.')
-print "Good!"
+print("Good!")
 
 build("sizes", "sizes")
-print "Checking output of sizes ... "
+print("Checking output of sizes ... ")
 runAndCheckSizes()
-print "Ok!"
+print("Ok!")
 
 build("pointer", "pointer")
 run("./pointer")  # Run pointer as a sanity check, but there's no output to check
 
 build("swap", "swap")
-print "Checking output of swap ... "
+print("Checking output of swap ... ")
 runAndCheckSwap()
-print "Ok!"
+print("Ok!")
 
-print "LGTM"
+print("LGTM")
