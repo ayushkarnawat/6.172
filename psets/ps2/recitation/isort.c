@@ -5,10 +5,9 @@
 #include <stdlib.h>
 
 /* Typedefs */
-
 typedef uint32_t data_t;
 
-extern void quickSortIterative(data_t arr[], int l, int h);
+extern void quickSortIterative(data_t arr[], int low, int high);
 
 /* Insertion sort */
 void isort(data_t* left, data_t* right) {
@@ -53,10 +52,10 @@ int main(int argc, char* argv[]) {
 
     isort(data, data + N - 1);
     //quickSortIterative(data, 0, N);
-    /*for (i = 0; i < N; i++) {
+    for (i = 0; i < N; i++) {
       printf("%d ", data[i]);
     }
-    printf("\n");*/
+    printf("\n");
   }
   free(data);
   printf("Done!\n");

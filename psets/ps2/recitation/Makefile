@@ -1,12 +1,11 @@
 CC := clang
+LDFLAGS := # -lrt
 
 ifeq ($(DEBUG),1)
 	CFLAGS := -Wall -O0 -g
 else
 	CFLAGS := -Wall -O1 -DNDEBUG 
 endif
-
-LDFLAGS := -lrt
 
 all: isort sum
 
