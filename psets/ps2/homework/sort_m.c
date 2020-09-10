@@ -20,10 +20,78 @@
  * IN THE SOFTWARE.
  **/
 
-
+#include "./isort.c"
 #include "./util.h"
 
-void sort_m(data_t* A, int p, int r) {
-  printf("Unimplemented!\n");
+
+// A merge routine. Merges the sub-arrays A [start...mid] and A [mid+1 ... end].
+// Allocates extra scratch space 'left' to merge the subarrays.
+static inline void merge_m(data_t* arr, int start, int mid, int end);
+
+// Copy values from source to destination. 
+static inline void copy_m(data_t* src, data_t* dest, int n);
+
+
+// A basic merge sort routine that sorts the subarray A[start ... end]
+void sort_m(data_t* arr, int start, int end) {
+  assert(arr);
+  // In practice, merge sort is slow for small array sizes. Using faster sorting
+  // techniques (i.e. insertion sort) when the array size is small (aka < 100),
+  // can make a significant improvement in the runtime of the algorithm.
+  if (end-start < 100){
+    isort(&(arr[start]), &(arr[end]));
+  } else {
+    int mid = (start + end) / 2;
+    sort_m(arr, start, mid);
+    sort_m(arr, mid + 1, end);
+    merge_m(arr, start, mid, end);
+  }
 }
 
+static inline void merge_m(data_t* arr, int start, int mid, int end) {
+  assert(arr);
+  assert(start <= mid);
+  assert((mid + 1) <= end);
+  int n_left = mid - start + 1;
+  int n_right = end - mid;
+
+  data_t* left = 0;
+  mem_alloc(&left, n_left+1);
+  if (left == NULL) {
+    mem_free(&left);
+    return;
+  }
+
+  copy_m(&(arr[start]), left, n_left);
+  left[n_left] = UINT_MAX;
+
+  unsigned int* arrptr = &(arr[start]);
+	unsigned int* leftptr = left;
+	unsigned int* rightptr = &(arr[mid+1]);
+
+  while (n_left > 0 && n_right > 0) {
+    long cmp = (*leftptr <= *rightptr);
+	  long min = *rightptr ^ ((*leftptr ^ *rightptr) & -(cmp));
+
+    *arrptr++ = min;
+	  leftptr += cmp; n_left -= cmp;
+	  rightptr += !cmp; n_right -= !cmp;
+  }
+
+  while (n_left > 0) {
+	  *arrptr++ = *leftptr;
+	  n_left--;
+	}
+  
+  mem_free(&left);
+}
+
+static inline void copy_m(data_t* src, data_t* dest, int n) {
+  assert(src);
+  assert(dest);
+
+  // access use ptrs instead of array idxs
+  for (int i = 0 ; i < n ; i++) {
+    *(dest+i) = *(src+i);
+  }
+}

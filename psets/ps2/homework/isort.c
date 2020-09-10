@@ -24,11 +24,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-// Typedefs
-typedef uint32_t data_t;
+#include "./util.h" // for data_t
 
 // Insertion sort, sorting the array between begin and end, inclusive
-void isort(data_t* begin, data_t* end) {
+inline void isort(data_t* begin, data_t* end);
+
+inline void isort(data_t* begin, data_t* end) {
   data_t* cur = begin + 1;
   while (cur <= end) {
     data_t val = *cur;
@@ -43,4 +44,3 @@ void isort(data_t* begin, data_t* end) {
     cur++;
   }
 }
-
