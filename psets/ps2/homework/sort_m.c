@@ -24,39 +24,32 @@
 #include "./util.h"
 
 
-/**
- * A merge routine. Merges the sub-arrays A [start...mid] and A [mid+1 ... end].
- * Uses two arrays 'left' and 'right' in the merge operation.
- * 
- * Instead of using two different arrays (left + right) in the merge operation,
- * we will instead use the original array along with the left subarray to merge
- * the subarrays.
- */
-static inline void merge_m(data_t* A, int p, int q, int r);
+// A merge routine. Merges the sub-arrays A [start...mid] and A [mid+1 ... end].
+// Allocates extra scratch space 'left' to merge the subarrays.
+static inline void merge_m(data_t* arr, int start, int mid, int end);
 
 // Copy values from source to destination. 
-static inline void copy_m(data_t* source, data_t* dest, int n);
+static inline void copy_m(data_t* src, data_t* dest, int n);
 
 
-// A basic merge sort routine that sorts the subarray A[p..r]
-void sort_m(data_t* A, int p, int r) {
-  assert(A);
-  // In practice, merge sort is slow for small array sizes. As such, using
-  // faster sorting techniques (i.e. insertion sort) when the array size is
-  // small (aka < 100), can make a significant improvement in the runtime of the
-  // algorithm.
-  if (r-p < 100){
-    isort(&(A[p]), &(A[r]));
+// A basic merge sort routine that sorts the subarray A[start ... end]
+void sort_m(data_t* arr, int start, int end) {
+  assert(arr);
+  // In practice, merge sort is slow for small array sizes. Using faster sorting
+  // techniques (i.e. insertion sort) when the array size is small (aka < 100),
+  // can make a significant improvement in the runtime of the algorithm.
+  if (end-start < 100){
+    isort(&(arr[start]), &(arr[end]));
   } else {
-    int q = (p + r) / 2;
-    sort_m(A, p, q);
-    sort_m(A, q + 1, r);
-    merge_m(A, p, q, r);
+    int mid = (start + end) / 2;
+    sort_m(arr, start, mid);
+    sort_m(arr, mid + 1, end);
+    merge_m(arr, start, mid, end);
   }
 }
 
-static inline void merge_m(data_t* A, int start, int mid, int end) {
-  assert(A);
+static inline void merge_m(data_t* arr, int start, int mid, int end) {
+  assert(arr);
   assert(start <= mid);
   assert((mid + 1) <= end);
   int n_left = mid - start + 1;
@@ -69,36 +62,36 @@ static inline void merge_m(data_t* A, int start, int mid, int end) {
     return;
   }
 
-  copy_m(&(A[start]), left, n_left);
+  copy_m(&(arr[start]), left, n_left);
   left[n_left] = UINT_MAX;
 
-  unsigned int* Aptr = &(A[start]);
+  unsigned int* arrptr = &(arr[start]);
 	unsigned int* leftptr = left;
-	unsigned int* rightptr = &(A[mid+1]);
+	unsigned int* rightptr = &(arr[mid+1]);
 
   while (n_left > 0 && n_right > 0) {
     long cmp = (*leftptr <= *rightptr);
 	  long min = *rightptr ^ ((*leftptr ^ *rightptr) & -(cmp));
 
-    *Aptr++ = min;
+    *arrptr++ = min;
 	  leftptr += cmp; n_left -= cmp;
 	  rightptr += !cmp; n_right -= !cmp;
   }
 
   while (n_left > 0) {
-	  *Aptr++ = *leftptr;
+	  *arrptr++ = *leftptr;
 	  n_left--;
 	}
   
   mem_free(&left);
 }
 
-static inline void copy_m(data_t* source, data_t* dest, int n) {
+static inline void copy_m(data_t* src, data_t* dest, int n) {
+  assert(src);
   assert(dest);
-  assert(source);
 
   // access use ptrs instead of array idxs
   for (int i = 0 ; i < n ; i++) {
-    *(dest+i) = *(source+i);
+    *(dest+i) = *(src+i);
   }
 }
