@@ -61,12 +61,11 @@ int main(int argc, char** argv) {
   // and its name (for printing)
   struct testFunc_t testFunc[] = {
     {&sort_a, "sort_a\t\t"},
-    {&sort_a, "sort_a repeated\t"},
-    //{&sort_i, "sort_i\t\t"},
-    //{&sort_p, "sort_p\t\t"},
-    //{&sort_c, "sort_c\t\t"},
-    //{&sort_m, "sort_m\t\t"},
-    //{&sort_f, "sort_f\t\t"},
+    {&sort_i, "sort_i\t\t"},
+    {&sort_p, "sort_p\t\t"},
+    // {&sort_c, "sort_c\t\t"},
+    // {&sort_m, "sort_m\t\t"},
+    // {&sort_f, "sort_f\t\t"},
   };
   const int kNumOfFunc = sizeof(testFunc) / sizeof(testFunc[0]);
 
