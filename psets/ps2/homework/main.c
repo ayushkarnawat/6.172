@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     {&sort_a, "sort_a\t\t"},
     {&sort_i, "sort_i\t\t"},
     {&sort_p, "sort_p\t\t"},
-    // {&sort_c, "sort_c\t\t"},
+    {&sort_c, "sort_c\t\t"},
     // {&sort_m, "sort_m\t\t"},
     // {&sort_f, "sort_f\t\t"},
   };
