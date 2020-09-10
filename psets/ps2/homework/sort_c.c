@@ -46,7 +46,7 @@ void sort_c(data_t* A, int p, int r) {
     sort_c(A, p, q);
     sort_c(A, q + 1, r);
     merge_c(A, p, q, r);
-  } 
+  }
 }
 
 static inline void merge_c(data_t* A, int p, int q, int r) {
