@@ -27,7 +27,7 @@
 
 // N is small enough so that 3 arrays of size N fit into the AWS machine
 // level 1 caches (which are 32 KB each, as seen by running `lscpu`)
-#define N          1024
+// #define N          1024
 
 // Run for multiple experiments to reduce measurement error on gettime().
 #define I          100000
@@ -42,47 +42,49 @@
 #define __TYPE__   uint32_t
 #endif
 
-// Define a way of automatically converting __OP__ and __TYPE__ into string literals
+// Automatically convert __OP__ and __TYPE__ into string literals
 #define stringify(V) _stringify(V)
 #define _stringify(V) #V
 
 int main(int argc, char *argv[]) {
-    __TYPE__ A[N];
-    __TYPE__ B[N];
-    __TYPE__ C[N];
-    __TYPE__ total = 0;
+  int N = atoi(argv[1]);
 
-    int i, j;
-    unsigned int seed = 0;
+  __TYPE__ A[N];
+  __TYPE__ B[N];
+  __TYPE__ C[N];
+  __TYPE__ total = 0;
 
-    // Touch each element in each array before we start the timed part
-    // of execution.  This operation brings all arrays into the level 1
-    // cache and gives us a 'cleaner' view of speedup from vectorization.
+  int i, j;
+  unsigned int seed = 0;
+
+  // Touch each element in each array before we start the timed part
+  // of execution.  This operation brings all arrays into the level 1
+  // cache and gives us a 'cleaner' view of speedup from vectorization.
+  for (j = 0; j < N; j++) {
+    A[j] = 0;  // 0 was chosen arbitrarily
+    B[j] = 0;
+    C[j] = 0;
+  }
+
+  fasttime_t time1 = gettime();
+
+  for (i = 0; i < I; i++) {
     for (j = 0; j < N; j++) {
-        A[j] = 0;  // 0 was chosen arbitrarily
-        B[j] = 0;
-        C[j] = 0;
+      C[j] = A[j] __OP__ B[j];
     }
+  }
 
-    fasttime_t time1 = gettime();
+  fasttime_t time2 = gettime();
 
-    for (i = 0; i < I; i++) {
-        for (j = 0; j < N; j++) {
-            C[j] = A[j] __OP__ B[j];
-        }
-    }
+  // Forces the compiler to not prune away any loop operations
+  total += C[rand_r(&seed) % N];
 
-    fasttime_t time2 = gettime();
+  double elapsedf = tdiff(time1, time2);
+  // C concatenates adjacent string literals.  We take advantage of
+  // this and include a print-out of __OP__ and __TYPE__
+  printf("Elapsed execution time: %f sec; N: %d, I: %d,"
+          " __OP__: %s, __TYPE__: %s\n",
+          elapsedf, N, I, stringify(__OP__), stringify(__TYPE__));
 
-    // Forces the compiler to not prune away any loop operations
-    total += C[rand_r(&seed) % N];
-
-    double elapsedf = tdiff(time1, time2);
-    // C concatenates adjacent string literals.  We take advantage of
-    // this and include a print-out of __OP__ and __TYPE__
-    printf("Elapsed execution time: %f sec; N: %d, I: %d,"
-           " __OP__: %s, __TYPE__: %s\n",
-           elapsedf, N, I, stringify(__OP__), stringify(__TYPE__));
-
-    return total;
+  return total;
 }
