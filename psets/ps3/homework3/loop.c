@@ -69,7 +69,8 @@ int main(int argc, char *argv[]) {
   fasttime_t time1 = gettime();
 
   for (i = 0; i < I; i++) {
-    for (j = 0; j < N; j++) {
+    #pragma clang loop vectorize_width(2)
+    for (j = 0; j < N; j+=2) {
       C[j] = A[j] __OP__ B[j];
     }
   }
