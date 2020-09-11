@@ -2,8 +2,8 @@ CC := clang
 
 TARGETS = example1 example2 example3 example4
 
+CFLAGS := -Wall -g -std=gnu99 -ffast-math
 OTHER_CFLAGS ?=
-CFLAGS := -Wall -g -std=gnu99
 
 ifeq ($(DEBUG),1)
   CFLAGS += -O0
@@ -30,7 +30,7 @@ endif
 
 CFLAGS += $(OTHER_CFLAGS)
 
-LDFLAGS := -lrt
+LDFLAGS := # -lrt
 
 # You shouldn't need to touch this.  This keeps track of whether or
 # not you've changed CFLAGS.
