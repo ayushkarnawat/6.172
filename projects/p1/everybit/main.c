@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
   char optchar;
   opterr = 0;
   int selected_test = -1;
-  while ((optchar = getopt(argc, argv, "n:t:sml")) != -1) {
+  while ((optchar = getopt(argc, argv, "n:t:sml:a")) != -1) {
     switch (optchar) {
     case 'n':
       selected_test = atoi(optarg);
@@ -81,6 +81,10 @@ int main(int argc, char** argv) {
       printf("---- END RESULTS ----\n");
       retval = EXIT_SUCCESS;
       goto cleanup;
+    case 'a':
+      sample_test();
+      retval = EXIT_SUCCESS;
+      goto cleanup;
     }
   }
 
@@ -98,7 +102,8 @@ void print_usage(const char* const argv_0) {
           "\t -s Run a sample small (0.01s) rotation operation\n"
           "\t -m Run a sample medium (0.1s) rotation operation\n"
           "\t -l Run a sample large (1s) rotation operation\n"
-          "\t    (note: the provided -[s/m/l] options only test performance and NOT correctness.)\n"
+          "\t    (note: the provided -[s/m/l] options only test performance\n"
+          "\t     and NOT correctness.)\n"
           "\t -t tests/default\tRun alltests in the testfile tests/default\n"
           "\t -n 1 -t tests/default\tRun test 1 in the testfile tests/default\n",
           argv_0);

@@ -406,6 +406,19 @@ void parse_and_run_tests(const char* filename, int selected_test) {
   fprintf(stderr, "Done testing file %s.\n", filename);
 }
 
+void sample_test() {
+  bitarray_t* bit = bitarray_new(8);
+  bitarray_randfill(bit);
+  // Input
+  bitarray_fprint(stdout, bit);
+  printf("\n");
+  // Rotate
+  bitarray_rotate(bit, 0, 4, 2);
+  // Output
+  bitarray_fprint(stdout, bit);
+  printf("\n");
+}
+
 // Local Variables:
 // mode: C
 // fill-column: 100
