@@ -267,28 +267,27 @@ static void bitarray_rotate_ab(bitarray_t* const bitarray,
                             const size_t bit_length,
                             const ssize_t bit_right_amount) {
   // Ensure bit shifts to the right only
-  assert(bit_length > bit_right_amount && bit_right_amount >= 0);
-  // assert(bit_right_amount >= 0);
+  assert(bit_length > bit_right_amount);
+  assert(bit_right_amount >= 0);
 
   // Store bits to move in auxillary array
+  const size_t seperator = bit_offset + (bit_length - bit_right_amount);
   bitarray_t* aux = bitarray_new(bit_right_amount);
   size_t tmp_index = 0;
-
-  for (size_t i=bit_offset+(bit_length-bit_right_amount); i < bit_offset+bit_length; i++) {
-    // printf("%zu, %zu, %d \n", i, tmp_index, bitarray_get(bitarray, i));
+  for (size_t i=seperator; i < bit_offset+bit_length; i++) {
     bitarray_set(aux, tmp_index, bitarray_get(bitarray, i));
     ++tmp_index;
   }
 
   // Move bits into (new) location
-  for (size_t i=bit_offset + (bit_length-bit_right_amount); i > bit_offset; --i) {
-    printf("%zu, %zu, %d \n", i, i+bit_right_amount, bitarray_get(bitarray, i));
+  for (size_t i=seperator-1; i >= bit_offset; i--) {
     bitarray_set(bitarray, i+bit_right_amount, bitarray_get(bitarray, i));
+    if (i==0) { break; } // cumbersome; prevent bad memory access
   }
   for (size_t i=0; i < aux->bit_sz; ++i) {
-    // printf("%zu, %zu, %d \n", i, i+bit_offset, bitarray_get(aux, i));
     bitarray_set(bitarray, i+bit_offset, bitarray_get(aux, i));
   }
+
   bitarray_free(aux);
 
   // for (size_t i = bit_offset; i < bit_offset + bit_length-bit_right_amount; i++) {
