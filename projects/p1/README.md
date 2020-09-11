@@ -13,10 +13,21 @@ bit array, we use more efficient strategies. In particular,
 |   Reversal  |  Constant storage |            --           |
 
 ### AB Rotation
-The most obvious way to perform a circular left rotation is to consider the string to be rotated to be of the form `ab`, where `a` and `b` are bit strings. We wish to transform `ab` to `ba`. The simplest method is to copy `a` to an auxiliary array, move `b` to its final location, then copy `a` from the auxiliary array to its final location. This method is simple, but the need for a large auxiliary array can be problematic for cache performance when rotating long strings.
+The most obvious way to perform a circular left rotation is to consider the
+string to be rotated to be of the form `ab`, where `a` and `b` are bit strings.
+We wish to transform `ab` to `ba`. The simplest method is to copy `a` to an
+auxiliary array, move `b` to its final location, then copy `a` from the
+auxiliary array to its final location. This method is simple, but the need for a
+large auxiliary array can be problematic for cache performance when rotating
+long strings.
 
 ### Cyclic
-To minimize the number of bit movements, a cyclic approach can be implemented, where each bit moves ahead by the specified amount, modulo the length of the region to be rotated, eventually looping back to the first bit in the cycle. This strategy places all bits in the correct locations while using a constant amount of auxiliary space, but memory accesses are scattered, which can adversely impact caching.
+To minimize the number of bit movements, a cyclic approach can be implemented,
+where each bit moves ahead by the specified amount, modulo the length of the
+region to be rotated, eventually looping back to the first bit in the cycle.
+This strategy places all bits in the correct locations while using a constant
+amount of auxiliary space, but memory accesses are scattered, which can
+adversely impact caching.
 
 ### Reversal
 Finally, there is a clever approach that moves every bit twice without using

@@ -98,7 +98,8 @@ void print_usage(const char* const argv_0) {
           "\t -s Run a sample small (0.01s) rotation operation\n"
           "\t -m Run a sample medium (0.1s) rotation operation\n"
           "\t -l Run a sample large (1s) rotation operation\n"
-          "\t    (note: the provided -[s/m/l] options only test performance and NOT correctness.)\n"
+          "\t    (note: the provided -[s/m/l] options only test performance\n"
+          "\t     and NOT correctness.)\n"
           "\t -t tests/default\tRun alltests in the testfile tests/default\n"
           "\t -n 1 -t tests/default\tRun test 1 in the testfile tests/default\n",
           argv_0);
