@@ -24,14 +24,13 @@
 // array containing bit_sz bits will consume roughly bit_sz/8 bytes of
 // memory.
 
-
-#include "./bitarray.h"
-
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
 #include <sys/types.h>
+
+#include "./bitarray.h"
 
 
 // ********************************* Types **********************************
@@ -50,61 +49,92 @@ struct bitarray {
 
 // ******************** Prototypes for static functions *********************
 
-// Rotates a subarray left by an arbitrary number of bits.
-//
-// bit_offset is the index of the start of the subarray
-// bit_length is the length of the subarray, in bits
-// bit_left_amount is the number of places to rotate the
-//                    subarray left
-//
-// The subarray spans the half-open interval
-// [bit_offset, bit_offset + bit_length)
-// That is, the start is inclusive, but the end is exclusive.
+/**
+ * @brief Rotates a subarray left by an arbitrary number of bits.
+ * 
+ * The subarray spans the half-open interval [bit_offset, bit_offset +
+ * bit_length). That is, the start is inclusive, but the end is exclusive.
+ * 
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @param bit_offset Index of the start of the subarray.
+ * @param bit_length Length of the subarray, in bits.
+ * @param bit_left_amount Number of places to rotate the subarray left.
+ */
 static void bitarray_rotate_left(bitarray_t* const bitarray,
                                  const size_t bit_offset,
                                  const size_t bit_length,
                                  const size_t bit_left_amount);
 
-// Rotates a subarray left by one bit.
-//
-// bit_offset is the index of the start of the subarray
-// bit_length is the length of the subarray, in bits
-//
-// The subarray spans the half-open interval
-// [bit_offset, bit_offset + bit_length)
-// That is, the start is inclusive, but the end is exclusive.
+/**
+ * @brief Rotates a subarray left by one bit.
+ *
+ * The subarray spans the half-open interval [bit_offset, bit_offset +
+ * bit_length). That is, the start is inclusive, but the end is exclusive.
+ *
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @param bit_offset Index of the start of the subarray.
+ * @param bit_length Length of the subarray, in bits.
+ */
 static void bitarray_rotate_left_one(bitarray_t* const bitarray,
                                      const size_t bit_offset,
                                      const size_t bit_length);
 
-// Portable modulo operation that supports negative dividends.
-//
-// Many programming languages define modulo in a manner incompatible with its
-// widely-accepted mathematical definition.
-// http://stackoverflow.com/questions/1907565/c-python-different-behaviour-of-the-modulo-operation
-// provides details; in particular, C's modulo
-// operator (which the standard calls a "remainder" operator) yields a result
-// signed identically to the dividend e.g., -1 % 10 yields -1.
-// This is obviously unacceptable for a function which returns size_t, so we
-// define our own.
-//
-// n is the dividend and m is the divisor
-//
-// Returns a positive integer r = n (mod m), in the range
-// 0 <= r < m.
+/**
+ * @brief Rotates subarray by transforming `ab` to `ba`.
+ * 
+ * Consider the string to be rotated to be of the form `ab`, where `a` and `b`
+ * are bit strings. In order to transform `ab` to `ba`, we copy `a` to an
+ * auxiliary array, move `b` to its final location, then copy `a` from the
+ * auxiliary array to its final location.
+ * 
+ * The subarray spans the half-open interval [bit_offset, bit_offset +
+ * bit_length). That is, the start is inclusive, but the end is exclusive.
+ * 
+ * NOTE: Large auxiliary array can be problematic for cache performance when
+ * rotating long strings.
+ * 
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @param bit_offset Index of the start of the subarray.
+ * @param bit_length Length of the subarray, in bits.
+ * @param bit_right_amount Number of places to rotate the subarray right.
+ */
+static void bitarray_rotate_ab(bitarray_t* const bitarray,
+                               const size_t bit_offset,
+                               const size_t bit_length,
+                               const ssize_t bit_right_amount);
+
+/**
+ * @brief Portable modulo operation that supports negative dividends.
+ * 
+ * Many programming languages define modulo in a manner incompatible with its
+ * widely-accepted mathematical definition. http://stackoverflow.com/q/1907565/
+ * provides details; in particular, C's modulo operator (which the standard
+ * calls a "remainder" operator) yields a result signed identically to the
+ * dividend e.g., -1 % 10 yields -1. This is obviously unacceptable for a
+ * function which returns size_t, so we define our own.
+ * 
+ * @param n Dividend.
+ * @param m Divisor.
+ * @returns Positive integer `r = n (mod m)`, in the range `[0,m)`.
+ * @example modulo(3, 5) = 3
+ * @example modulo(-1, 10) = 9
+ */
 static size_t modulo(const ssize_t n, const size_t m);
 
-// Produces a mask which, when ANDed with a byte, retains only the
-// bit_index th byte.
-//
-// Example: bitmask(5) produces the byte 0b00100000.
-//
-// (Note that here the index is counted from right
-// to left, which is different from how we represent bitarrays in the
-// tests.  This function is only used by bitarray_get and bitarray_set,
-// however, so as long as you always use bitarray_get and bitarray_set
-// to access bits in your bitarray, this reverse representation should
-// not matter.
+/**
+ * @brief Produces a mask which, when ANDed with a byte, retains only the
+ * bit_index th byte.
+ *
+ * (Note that here the index is counted from right to left, which is different
+ * from how we represent bitarrays in the tests.  This function is only used by
+ * bitarray_get and bitarray_set, however, so as long as you always use
+ * bitarray_get and bitarray_set to access bits in your bitarray, this reverse
+ * representation should not matter.
+ * 
+ * @param bit_index Index which represents bit.
+ * @returns Char representation of the mask containing `bit_index`th byte.
+ * @example bitmask(5) = 0b00100000.
+ */
 static char bitmask(const size_t bit_index);
 
 
@@ -112,13 +142,13 @@ static char bitmask(const size_t bit_index);
 
 bitarray_t* bitarray_new(const size_t bit_sz) {
   // Allocate an underlying buffer of ceil(bit_sz/8) bytes.
-  char* const buf = calloc(1, (bit_sz+7) / 8);
+  char* const buf = (char*) calloc(1, (bit_sz+7) / 8);
   if (buf == NULL) {
     return NULL;
   }
 
   // Allocate space for the struct.
-  bitarray_t* const bitarray = malloc(sizeof(struct bitarray));
+  bitarray_t* const bitarray = (bitarray_t*) malloc(sizeof(struct bitarray));
   if (bitarray == NULL) {
     free(buf);
     return NULL;
@@ -153,8 +183,7 @@ bool bitarray_get(const bitarray_t* const bitarray, const size_t bit_index) {
   // get the byte; we then bitwise-and the byte with an appropriate mask
   // to produce either a zero byte (if the bit was 0) or a nonzero byte
   // (if it wasn't).  Finally, we convert that to a boolean.
-  return (bitarray->buf[bit_index / 8] & bitmask(bit_index)) ?
-         true : false;
+  return (bitarray->buf[bit_index / 8] & bitmask(bit_index)) ? true : false;
 }
 
 void bitarray_set(bitarray_t* const bitarray,
@@ -175,7 +204,7 @@ void bitarray_set(bitarray_t* const bitarray,
 }
 
 void bitarray_randfill(bitarray_t* const bitarray){
-  int32_t *ptr = (int32_t *)bitarray->buf;
+  int32_t* ptr = (int32_t*) bitarray->buf;
   for (int64_t i=0; i<bitarray->bit_sz/32 + 1; i++){
     ptr[i] = rand();
   }
