@@ -8,13 +8,10 @@
 #define SIZE (1L << 16)
 
 double test(double * restrict a) {
-  size_t i;
-
   double *x = __builtin_assume_aligned(a, 16);
-
   double y = 0;
 
-  for (i = 0; i < SIZE; i++) {
+  for (size_t i = 0; i < SIZE; i++) {
     y += x[i];
   }
   return y;

@@ -2,8 +2,9 @@ CC := clang
 
 TARGETS = example1 example2 example3 example4
 
-OTHER_CFLAGS ?=
 CFLAGS := -Wall -g -std=gnu99
+OTHER_CFLAGS ?= -ffast-math
+LDFLAGS := # -lrt
 
 ifeq ($(DEBUG),1)
   CFLAGS += -O0
@@ -30,8 +31,6 @@ endif
 
 CFLAGS += $(OTHER_CFLAGS)
 
-LDFLAGS := -lrt
-
 # You shouldn't need to touch this.  This keeps track of whether or
 # not you've changed CFLAGS.
 OLD_CFLAGS := $(shell cat .cflags 2> /dev/null)
@@ -49,6 +48,5 @@ all: $(TARGETS:=.o)
 %.lst: %.c .cflags
 	$(CC) $(CFLAGS) -Wa,-aslh -c $< > $@
 
-clean::
-	rm -rf 
+clean:
 	rm -f *.o *.s .cflags perf.data *.lst
