@@ -263,9 +263,9 @@ static char bitmask(const size_t bit_index) {
 }
 
 static void bitarray_rotate_ab(bitarray_t* const bitarray,
-                            const size_t bit_offset,
-                            const size_t bit_length,
-                            const ssize_t bit_right_amount) {
+                               const size_t bit_offset,
+                               const size_t bit_length,
+                               const ssize_t bit_right_amount) {
   // Ensure bit shifts to the right only
   assert(bit_length > bit_right_amount);
   assert(bit_right_amount >= 0);
