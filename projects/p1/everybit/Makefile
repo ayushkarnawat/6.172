@@ -106,12 +106,15 @@ $(PRODUCT):	$(OBJECTS) .buildmode
 
 # How to clean up
 clean:
-	$(RM) everybit *.o .buildmode *.gcov *.gcno *.gcda
+	$(RM) everybit *.o .buildmode *.gcov *.gcno *.gcda cachegrind*
 
-test: $(PRODUCT)
+test: $(PRODUCT) testperf
 	../test.py $(PRODUCT)
 
-testquiet: $(PRODUCT)
+testquiet: $(PRODUCT) testperf
 	../test.py --quiet $(PRODUCT)
+	
+testperf: $(PRODUCT)
+	./everybit -l
 
 .PHONY: all clean

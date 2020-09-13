@@ -104,6 +104,26 @@ static void bitarray_rotate_ab(bitarray_t* const bitarray,
                                const ssize_t bit_right_amount);
 
 /**
+ * @brief Rotates subarray by moving each bit to its specified location
+ * directly.
+ * 
+ * The subarray spans the half-open interval [bit_offset, bit_offset +
+ * bit_length). That is, the start is inclusive, but the end is exclusive.
+ * 
+ * NOTE: Although constant auxillary space is used, the
+ * memory accesses are scattered, which can adversely impact caching.
+ * 
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @param bit_offset Index of the start of the subarray.
+ * @param bit_length Length of the subarray, in bits.
+ * @param bit_right_amount Number of places to rotate the subarray right.
+ */
+static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
+                                   const size_t bit_offset,
+                                   const size_t bit_length,
+                                   const ssize_t bit_right_amount);
+
+/**
  * @brief Portable modulo operation that supports negative dividends.
  * 
  * Many programming languages define modulo in a manner incompatible with its
@@ -224,8 +244,10 @@ void bitarray_rotate(bitarray_t* const bitarray,
   // multiple full rotations.
   // bitarray_rotate_left(bitarray, bit_offset, bit_length,
   //                      modulo(-bit_right_amount, bit_length));
-  bitarray_rotate_ab(bitarray, bit_offset, bit_length,
-                     modulo(bit_right_amount, bit_length));
+  // bitarray_rotate_ab(bitarray, bit_offset, bit_length,
+  //                    modulo(bit_right_amount, bit_length));
+  bitarray_rotate_cyclic(bitarray, bit_offset, bit_length,
+                         modulo(bit_right_amount, bit_length));
 }
 
 static void bitarray_rotate_left(bitarray_t* const bitarray,
@@ -289,13 +311,33 @@ static void bitarray_rotate_ab(bitarray_t* const bitarray,
   }
 
   bitarray_free(aux);
+}
 
-  // for (size_t i = bit_offset; i < bit_offset + bit_length-bit_right_amount; i++) {
-  //   size_t new_index = i + bit_right_amount;
-  //   if (new_index >= bit_offset + bit_length) {
-  //     new_index -= bit_length;
-  //   }
-  //   // printf("%zu, %d \n", new_index, bitarray_get(bitarray, i));
-  //   bitarray_set(bitarray, new_index, bitarray_get(bitarray, i));
-  // }
+static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
+                                   const size_t bit_offset,
+                                   const size_t bit_length,
+                                   const ssize_t bit_right_amount) {
+  // We have to keep the temporay value of the bit as well as its initial
+  // location betwen every iteration. We then move the bit stored in this
+  // temporary index back into its new location. This will be O(1) in-place
+  // memory. The time cost will be the O(bit_length), where bit_length is the
+  // len of the bit string.
+  // 
+  // The other way is to consistently move the values starting from a certain
+  // n and store the replaced bits into a temporary auxillary bitstring.
+  // Finally, go through that bit string (whereever there are bits and move
+  // then to their correct location). This uses at most O(max(m,n)) memory,
+  // where m = bit_length / bit_right, and n = bit_length - (bit_length /
+  // bit_right).
+  for (size_t i = bit_offset; i < bit_offset + bit_length; i++) {
+    size_t new_index = i + bit_right_amount;
+    if (new_index >= bit_offset + bit_length) {
+      new_index -= bit_length;
+    }
+    bool temp_bit = bitarray_get(bitarray, new_index);
+    // We do not want to rewrite the location in memory. This will result in
+    // improper behavior; aka we get the wrong answer.
+    bitarray_set(bitarray, new_index, bitarray_get(bitarray, i));
+    // printf("%zu, %d \n", new_index, bitarray_get(bitarray, i));
+  }
 }
