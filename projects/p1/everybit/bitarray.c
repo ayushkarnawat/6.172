@@ -123,6 +123,12 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
                                    const size_t bit_length,
                                    const ssize_t bit_right_amount);
 
+/**
+ * @brief Check if all the bits are in their final positions (all 1s).
+ * 
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @returns true if all bits are 1s; false otherwise. 
+ */
 static bool is_final(const bitarray_t* const bitarray);
 
 /**
@@ -357,15 +363,17 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
 
 static bool is_final(const bitarray_t* const bitarray) {
   const size_t bit_sz = bitarray->bit_sz;
-  size_t buf_sz = bit_sz / 8;
-  size_t num_extra_bits = bit_sz % 8;
+  const size_t buf_sz = bit_sz / 8;
+  const size_t num_extra_bits = bit_sz % 8;
+
+  // Fast checking (in 8 bits buffers) if all bits are 1s
   for (size_t i=0; i < buf_sz; i++) {
-    if ((int) bitarray->buf[i] != 0xff)
+    if ((int)((uint8_t)bitarray->buf[i]) != 0xFF)
       return false; 
   }
+  // Test if remainings bits are all 1s
   if (num_extra_bits > 0) {
-    // test all if they are 1s
-    for (size_t i=bit_sz-(buf_sz*8); i<bit_sz; i++) {
+    for (size_t i=buf_sz*8; i<bit_sz; i++) {
       if (!bitarray_get(bitarray, i))
         return false;
     }
