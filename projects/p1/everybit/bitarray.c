@@ -123,6 +123,8 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
                                    const size_t bit_length,
                                    const ssize_t bit_right_amount);
 
+static bool is_final(const bitarray_t* const bitarray);
+
 /**
  * @brief Portable modulo operation that supports negative dividends.
  * 
@@ -329,15 +331,44 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
   // then to their correct location). This uses at most O(max(m,n)) memory,
   // where m = bit_length / bit_right, and n = bit_length - (bit_length /
   // bit_right).
+
+  // Are the bits in their final position? Initially, all the bits are in
+  // incorrect positions (represenetd by 0s). As the bits get placed into their
+  // correct positions, the bits become 1.
+  bitarray_t* positions = bitarray_new(bit_length);
+
+  // while the positions are t=not correct, check if the temp bit position is
+  // in the correct ocation. If it is not, then place that in its right
+  // location. If it is in its correct location, move onto the next bit which
+  // is not in its correct location.
+
+  // while (!is_final(positions))
+
   for (size_t i = bit_offset; i < bit_offset + bit_length; i++) {
     size_t new_index = i + bit_right_amount;
     if (new_index >= bit_offset + bit_length) {
       new_index -= bit_length;
     }
     bool temp_bit = bitarray_get(bitarray, new_index);
-    // We do not want to rewrite the location in memory. This will result in
-    // improper behavior; aka we get the wrong answer.
     bitarray_set(bitarray, new_index, bitarray_get(bitarray, i));
     // printf("%zu, %d \n", new_index, bitarray_get(bitarray, i));
   }
+}
+
+static bool is_final(const bitarray_t* const bitarray) {
+  const size_t bit_sz = bitarray->bit_sz;
+  size_t buf_sz = bit_sz / 8;
+  size_t num_extra_bits = bit_sz % 8;
+  for (size_t i=0; i < buf_sz; i++) {
+    if ((int) bitarray->buf[i] != 0xff)
+      return false; 
+  }
+  if (num_extra_bits > 0) {
+    // test all if they are 1s
+    for (size_t i=bit_sz-(buf_sz*8); i<bit_sz; i++) {
+      if (!bitarray_get(bitarray, i))
+        return false;
+    }
+  }
+  return true;
 }
