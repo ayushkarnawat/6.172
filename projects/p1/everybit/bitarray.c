@@ -107,11 +107,16 @@ static void bitarray_rotate_ab(bitarray_t* const bitarray,
  * @brief Rotates subarray by moving each bit to its specified location
  * directly.
  * 
+ * Keep the temporay value of the bit along with its location between every
+ * iteration. Move the bit stored in this temporary index to its new location.
+ * Space complexity: O(1).
+ * Time complexity: O(bit_length).
+ * 
  * The subarray spans the half-open interval [bit_offset, bit_offset +
  * bit_length). That is, the start is inclusive, but the end is exclusive.
  * 
- * NOTE: Although constant auxillary space is used, the
- * memory accesses are scattered, which can adversely impact caching.
+ * NOTE: Although constant auxillary space is used, the memory accesses are
+ * scattered, which can adversely impact caching.
  * 
  * @param bitarray Pointer to bitarray to be rotated.
  * @param bit_offset Index of the start of the subarray.
@@ -130,6 +135,14 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
  * @returns true if all bits are 1s; false otherwise. 
  */
 static bool is_final(const bitarray_t* const bitarray);
+
+/**
+ * @brief Find first instance of unoccupied index in the bitarray.
+ * 
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @returns Unoccupied index; -1 if none are fdund
+ */
+static long find_unoccupied_idx(const bitarray_t* const bitarray);
 
 /**
  * @brief Portable modulo operation that supports negative dividends.
@@ -325,40 +338,35 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
                                    const size_t bit_offset,
                                    const size_t bit_length,
                                    const ssize_t bit_right_amount) {
-  // We have to keep the temporay value of the bit as well as its initial
-  // location betwen every iteration. We then move the bit stored in this
-  // temporary index back into its new location. This will be O(1) in-place
-  // memory. The time cost will be the O(bit_length), where bit_length is the
-  // len of the bit string.
-  // 
-  // The other way is to consistently move the values starting from a certain
-  // n and store the replaced bits into a temporary auxillary bitstring.
-  // Finally, go through that bit string (whereever there are bits and move
-  // then to their correct location). This uses at most O(max(m,n)) memory,
-  // where m = bit_length / bit_right, and n = bit_length - (bit_length /
-  // bit_right).
-
   // Are the bits in their final position? Initially, all the bits are in
   // incorrect positions (represenetd by 0s). As the bits get placed into their
   // correct positions, the bits become 1.
   bitarray_t* positions = bitarray_new(bit_length);
 
-  // while the positions are t=not correct, check if the temp bit position is
-  // in the correct ocation. If it is not, then place that in its right
-  // location. If it is in its correct location, move onto the next bit which
-  // is not in its correct location.
-
-  // while (!is_final(positions))
-
-  for (size_t i = bit_offset; i < bit_offset + bit_length; i++) {
-    size_t new_index = i + bit_right_amount;
+  size_t old_index = bit_offset;
+  size_t new_index;
+  bool temp_bit;
+  while (!is_final(positions)) {
+    // Determine new position of the bit
+    new_index = old_index + bit_right_amount;
     if (new_index >= bit_offset + bit_length) {
       new_index -= bit_length;
     }
-    bool temp_bit = bitarray_get(bitarray, new_index);
-    bitarray_set(bitarray, new_index, bitarray_get(bitarray, i));
-    // printf("%zu, %d \n", new_index, bitarray_get(bitarray, i));
+    // Store the temporary bit value; used to replace bit value at new position
+    temp_bit = bitarray_get(bitarray, new_index);
+    if (old_index != new_index && !bitarray_get(positions, new_index)) {
+      bitarray_set(bitarray, new_index, bitarray_get(bitarray, old_index));
+      bitarray_set(positions, new_index, true);
+      old_index = new_index;
+    } else {
+      // Find another index that needs to be moved. We can simply just use a
+      // random index that is not in its final location.
+      long unoccupied_idx = find_unoccupied_idx(positions);
+      if (unoccupied_idx >= 0) 
+        old_index = bit_offset + unoccupied_idx;
+    }
   }
+  bitarray_free(positions);
 }
 
 static bool is_final(const bitarray_t* const bitarray) {
@@ -366,7 +374,7 @@ static bool is_final(const bitarray_t* const bitarray) {
   const size_t buf_sz = bit_sz / 8;
   const size_t num_extra_bits = bit_sz % 8;
 
-  // Fast checking (in 8 bits buffers) if all bits are 1s
+  // Fast checking (using 8 bits buffers) if all bits are 1s
   for (size_t i=0; i < buf_sz; i++) {
     if ((int)((uint8_t)bitarray->buf[i]) != 0xFF)
       return false; 
@@ -379,4 +387,29 @@ static bool is_final(const bitarray_t* const bitarray) {
     }
   }
   return true;
+}
+
+static long find_unoccupied_idx(const bitarray_t* const bitarray) {
+  const size_t bit_sz = bitarray->bit_sz;
+  const size_t buf_sz = bit_sz / 8;
+  const size_t num_extra_bits = bit_sz % 8;
+
+  // Fast checking (using 8 bits buffers) if some buffers have 0s.
+  for (size_t i=0; i < buf_sz; i++) {
+    if ((int)((uint8_t)bitarray->buf[i]) != 0xFF) {
+      long current_bit = i*8;
+      while (bitarray_get(bitarray, current_bit))
+        ++current_bit;
+      return current_bit;
+    }
+  }
+
+  // Test if there are remainings bits that are unoccupued (bit value is 0)
+  if (num_extra_bits > 0) {
+    for (long i=buf_sz*8; i<bit_sz; i++) {
+      if (!bitarray_get(bitarray, i))
+        return i;
+    }
+  }
+  return -1;
 }
