@@ -11,7 +11,7 @@ typedef struct Matrix {
 } Matrix;
 
 /**
- * Initialize a matrix (of size `[n_rows, n_cols]`) with zeros.
+ * @brief Initialize a matrix (of size `[n_rows, n_cols]`) with zeros.
  * 
  * @param n_rows Number of rows.
  * @param n_cols Number of columns.
@@ -32,30 +32,40 @@ Matrix* zeros(uint16_t n_rows, uint16_t n_cols) {
 }
 
 /**
- * Create a matrix (2D tensor) with data provided.
+ * @brief Create a matrix (2D tensor) with data provided.
  * 
+ * @param data Data to be inserted in row-major order.
+ * @param n_rows Number of rows.
+ * @param n_cols Number of columns.
+ * @returns Matrix of size [n,m] with values inserted.
  */ 
 Matrix* fill(uint8_t* data, uint16_t n_rows, uint16_t n_cols) {
   Matrix* matrix = zeros(n_rows, n_cols);
-  // matrix->data = data;
-  for(uint16_t x=0; x < n_rows; x++) {
-    for(uint16_t y=0; y < n_cols; y++) {
+  for (uint16_t x=0; x < n_rows; x++) {
+    for (uint16_t y=0; y < n_cols; y++) {
       matrix->data[x][y] = data[n_cols*x+y];
     }
   }
   return matrix;
 }
 
-/**
- * Print matrix.
- */
+/// @brief Free an allocated matrix. 
+void free_matrix(Matrix* m) {
+  for (int i=0; i < m->rows; i++) {
+    free(m->data[i]);
+  }
+  free(m->data);
+  free(m);
+}
+
+/// @brief Print matrix.
 void print_matrix(Matrix* m) {
   for(uint16_t x=0; x < m->rows; x++) {
-    printf("%s", "\n");
     for(uint16_t y=0; y < m->cols; y++) {
       // printf("%.2f\t", m->data[m->cols*x+y]);
       printf("%d\t", m->data[x][y]);
     }
+    printf("\n");
   }
   printf("\n");
 }
@@ -72,9 +82,8 @@ void print_matrix(Matrix* m) {
  * stored at the address a' = Nm+n.
  *
  * @param arr Array to be transposed.
- * @returns Transposed matrix.
  */
-Matrix* transpose(Matrix* arr) {
+void transpose(Matrix* arr) {
   // // Switch rows/cols (to ensure matrix is properly printed) 
   // int tmp_rows = arr->rows;
   // arr->rows = arr->cols;
@@ -100,7 +109,6 @@ Matrix* transpose(Matrix* arr) {
       arr->data[j][i] = tmp;
     }
   }
-  return arr;
 }
 
 int main(int argc, char *argv[]) {
@@ -111,8 +119,7 @@ int main(int argc, char *argv[]) {
   }
   Matrix* orig = fill(a, N, N);
   // print_matrix(orig);
-  Matrix* orig_t = transpose(orig);
-  // print_matrix(orig_t);
-  // Matrix* orig_t_t = transpose(orig_t);
-  // print_matrix(orig_t_t);
+  transpose(orig);
+  // print_matrix(orig);
+  free_matrix(orig);
 }
