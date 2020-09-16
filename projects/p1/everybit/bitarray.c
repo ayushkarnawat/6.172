@@ -104,6 +104,47 @@ static void bitarray_rotate_ab(bitarray_t* const bitarray,
                                const ssize_t bit_right_amount);
 
 /**
+ * @brief Rotates subarray by moving each bit to its specified location
+ * directly.
+ * 
+ * Keep the temporay value of the bit along with its location between every
+ * iteration. Move the bit stored in this temporary index to its new location.
+ * Space complexity: O(1).
+ * Time complexity: O(bit_length).
+ * 
+ * The subarray spans the half-open interval [bit_offset, bit_offset +
+ * bit_length). That is, the start is inclusive, but the end is exclusive.
+ * 
+ * NOTE: Although constant auxillary space is used, the memory accesses are
+ * scattered, which can adversely impact caching.
+ * 
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @param bit_offset Index of the start of the subarray.
+ * @param bit_length Length of the subarray, in bits.
+ * @param bit_right_amount Number of places to rotate the subarray right.
+ */
+static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
+                                   const size_t bit_offset,
+                                   const size_t bit_length,
+                                   const ssize_t bit_right_amount);
+
+/**
+ * @brief Check if all the bits are in their final positions (all 1s).
+ * 
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @returns true if all bits are 1s; false otherwise. 
+ */
+inline static bool is_final(const bitarray_t* const bitarray);
+
+/**
+ * @brief Find first instance of unoccupied index in the bitarray.
+ * 
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @returns Unoccupied index; -1 if none are fdund
+ */
+static long find_unoccupied_idx(const bitarray_t* const bitarray);
+
+/**
  * @brief Portable modulo operation that supports negative dividends.
  * 
  * Many programming languages define modulo in a manner incompatible with its
@@ -216,16 +257,21 @@ void bitarray_rotate(bitarray_t* const bitarray,
                      const ssize_t bit_right_amount) {
   assert(bit_offset + bit_length <= bitarray->bit_sz);
 
-  if (bit_length == 0) {
+  // Don't do anything if there's nothing to rotate
+  if (bit_length <= 1)
     return;
-  }
 
-  // Convert a rotate left or right to a left rotate only, and eliminate
-  // multiple full rotations.
+  // Converts rotates in either direction to a right rotate
+  size_t k = modulo(bit_right_amount, bit_length);
+
+  // Don't do anything if it's not being rotated
+  if (k == 0)
+    return;
+
   // bitarray_rotate_left(bitarray, bit_offset, bit_length,
   //                      modulo(-bit_right_amount, bit_length));
-  bitarray_rotate_ab(bitarray, bit_offset, bit_length,
-                     modulo(bit_right_amount, bit_length));
+  // bitarray_rotate_ab(bitarray, bit_offset, bit_length, k);
+  bitarray_rotate_cyclic(bitarray, bit_offset, bit_length, k);
 }
 
 static void bitarray_rotate_left(bitarray_t* const bitarray,
@@ -289,13 +335,72 @@ static void bitarray_rotate_ab(bitarray_t* const bitarray,
   }
 
   bitarray_free(aux);
+}
 
-  // for (size_t i = bit_offset; i < bit_offset + bit_length-bit_right_amount; i++) {
-  //   size_t new_index = i + bit_right_amount;
-  //   if (new_index >= bit_offset + bit_length) {
-  //     new_index -= bit_length;
-  //   }
-  //   // printf("%zu, %d \n", new_index, bitarray_get(bitarray, i));
-  //   bitarray_set(bitarray, new_index, bitarray_get(bitarray, i));
-  // }
+static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
+                                   const size_t bit_offset,
+                                   const size_t bit_length,
+                                   const ssize_t bit_right_amount) {
+  // Are the bits in their final position? Initially, all the bits are in
+  // incorrect positions (represenetd by 0s). As the bits get placed into their
+  // correct positions, they become 1.
+  bitarray_t* positions = bitarray_new(bit_length);
+
+  size_t old_index = bit_offset;
+  size_t new_index;
+  bool old_bit = bitarray_get(bitarray, old_index);
+  bool new_bit;
+  while (!is_final(positions)) {
+    // Determine new position of the bit
+    new_index = old_index + bit_right_amount;
+    if (new_index >= bit_offset + bit_length) {
+      new_index -= bit_length;
+    }
+    // Store bit value; used to replace bit value at new index 
+    new_bit = bitarray_get(bitarray, new_index);
+    if (old_index != new_index && !bitarray_get(positions, new_index-bit_offset)) {
+      bitarray_set(bitarray, new_index, old_bit);
+      bitarray_set(positions, new_index-bit_offset, true);
+      old_index = new_index;
+      old_bit = new_bit;
+    } else {
+      // Find another index that needs to be moved. We use a the first index
+      // that is not in its final location.
+      long unoccupied_idx = find_unoccupied_idx(positions);
+      if (unoccupied_idx >= 0) {
+        old_index = bit_offset + unoccupied_idx;
+        old_bit = bitarray_get(bitarray, old_index);
+      }
+    }
+  }
+  bitarray_free(positions);
+}
+
+inline static bool is_final(const bitarray_t* const bitarray) {
+  return (find_unoccupied_idx(bitarray) == -1) ? true : false;
+}
+
+static long find_unoccupied_idx(const bitarray_t* const bitarray) {
+  const size_t bit_sz = bitarray->bit_sz;
+  const size_t buf_sz = bit_sz / 8;
+  const size_t num_extra_bits = bit_sz % 8;
+
+  // Fast checking (using 8 bit buffers) if some bits within buffers have 0s.
+  for (size_t i=0; i < buf_sz; i++) {
+    if ((int)((uint8_t)bitarray->buf[i]) != 0xFF) {
+      long current_bit = i*8;
+      while (bitarray_get(bitarray, current_bit))
+        ++current_bit;
+      return current_bit;
+    }
+  }
+
+  // Test if any remainings bits are unoccupied (aka bit value is 0)
+  if (num_extra_bits > 0) {
+    for (long i=buf_sz*8; i<bit_sz; i++) {
+      if (!bitarray_get(bitarray, i))
+        return i;
+    }
+  }
+  return -1;
 }

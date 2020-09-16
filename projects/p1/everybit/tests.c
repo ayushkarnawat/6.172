@@ -406,6 +406,26 @@ void parse_and_run_tests(const char* filename, int selected_test) {
   fprintf(stderr, "Done testing file %s.\n", filename);
 }
 
+int _sample_test_a() {
+  bitarray_t* test = bitarray_new(10);
+  bitarray_randfill(test);
+
+  bitarray_fprint(stdout, test);
+  printf("\n");
+
+  bitarray_rotate(test, 1, 5, 2);
+  bitarray_fprint(stdout, test);
+  printf("\n");
+  bitarray_rotate(test, 1, 5, 3);
+  bitarray_fprint(stdout, test);
+  printf("\n");
+  bitarray_rotate(test, 0, 4, 2);
+  bitarray_fprint(stdout, test);
+  printf("\n");
+
+  return 0;
+}
+
 // Local Variables:
 // mode: C
 // fill-column: 100

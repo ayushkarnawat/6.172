@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
   char optchar;
   opterr = 0;
   int selected_test = -1;
-  while ((optchar = getopt(argc, argv, "n:t:sml")) != -1) {
+  while ((optchar = getopt(argc, argv, "n:a:t:sml")) != -1) {
     switch (optchar) {
     case 'n':
       selected_test = atoi(optarg);
@@ -79,6 +79,10 @@ int main(int argc, char** argv) {
       printf("Succesfully completed tier: %d\n",
              timed_rotation(1.0));
       printf("---- END RESULTS ----\n");
+      retval = EXIT_SUCCESS;
+      goto cleanup;
+    case 'a':
+      _sample_test_a();
       retval = EXIT_SUCCESS;
       goto cleanup;
     }
