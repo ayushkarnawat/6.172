@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
   char optchar;
   opterr = 0;
   int selected_test = -1;
-  while ((optchar = getopt(argc, argv, "n:t:sml:a")) != -1) {
+  while ((optchar = getopt(argc, argv, "n:a:t:sml")) != -1) {
     switch (optchar) {
     case 'n':
       selected_test = atoi(optarg);

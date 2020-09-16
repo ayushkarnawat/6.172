@@ -134,7 +134,7 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
  * @param bitarray Pointer to bitarray to be rotated.
  * @returns true if all bits are 1s; false otherwise. 
  */
-static bool is_final(const bitarray_t* const bitarray);
+inline static bool is_final(const bitarray_t* const bitarray);
 
 /**
  * @brief Find first instance of unoccupied index in the bitarray.
@@ -376,7 +376,7 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
   bitarray_free(positions);
 }
 
-static bool is_final(const bitarray_t* const bitarray) {
+inline static bool is_final(const bitarray_t* const bitarray) {
   return (find_unoccupied_idx(bitarray) == -1) ? true : false;
 }
 
