@@ -257,18 +257,21 @@ void bitarray_rotate(bitarray_t* const bitarray,
                      const ssize_t bit_right_amount) {
   assert(bit_offset + bit_length <= bitarray->bit_sz);
 
-  if (bit_length == 0) {
+  // Don't do anything if there's nothing to rotate
+  if (bit_length <= 1)
     return;
-  }
 
-  // Convert a rotate left or right to a left rotate only, and eliminate
-  // multiple full rotations.
+  // Converts rotates in either direction to a right rotate
+  size_t k = modulo(bit_right_amount, bit_length);
+
+  // Don't do anything if it's not being rotated
+  if (k == 0)
+    return;
+
   // bitarray_rotate_left(bitarray, bit_offset, bit_length,
   //                      modulo(-bit_right_amount, bit_length));
-  // bitarray_rotate_ab(bitarray, bit_offset, bit_length,
-  //                    modulo(bit_right_amount, bit_length));
-  bitarray_rotate_cyclic(bitarray, bit_offset, bit_length,
-                         modulo(bit_right_amount, bit_length));
+  // bitarray_rotate_ab(bitarray, bit_offset, bit_length, k);
+  bitarray_rotate_cyclic(bitarray, bit_offset, bit_length, k);
 }
 
 static void bitarray_rotate_left(bitarray_t* const bitarray,
@@ -340,53 +343,41 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
                                    const ssize_t bit_right_amount) {
   // Are the bits in their final position? Initially, all the bits are in
   // incorrect positions (represenetd by 0s). As the bits get placed into their
-  // correct positions, the bits become 1.
+  // correct positions, they become 1.
   bitarray_t* positions = bitarray_new(bit_length);
 
   size_t old_index = bit_offset;
   size_t new_index;
-  bool temp_bit;
+  bool old_bit = bitarray_get(bitarray, old_index);
+  bool new_bit;
   while (!is_final(positions)) {
     // Determine new position of the bit
     new_index = old_index + bit_right_amount;
     if (new_index >= bit_offset + bit_length) {
       new_index -= bit_length;
     }
-    // Store the temporary bit value; used to replace bit value at new position
-    temp_bit = bitarray_get(bitarray, new_index);
-    if (old_index != new_index && !bitarray_get(positions, new_index)) {
-      bitarray_set(bitarray, new_index, bitarray_get(bitarray, old_index));
-      bitarray_set(positions, new_index, true);
+    // Store bit value; used to replace bit value at new index 
+    new_bit = bitarray_get(bitarray, new_index);
+    if (old_index != new_index && !bitarray_get(positions, new_index-bit_offset)) {
+      bitarray_set(bitarray, new_index, old_bit);
+      bitarray_set(positions, new_index-bit_offset, true);
       old_index = new_index;
+      old_bit = new_bit;
     } else {
-      // Find another index that needs to be moved. We can simply just use a
-      // random index that is not in its final location.
+      // Find another index that needs to be moved. We use a the first index
+      // that is not in its final location.
       long unoccupied_idx = find_unoccupied_idx(positions);
-      if (unoccupied_idx >= 0) 
+      if (unoccupied_idx >= 0) {
         old_index = bit_offset + unoccupied_idx;
+        old_bit = bitarray_get(bitarray, old_index);
+      }
     }
   }
   bitarray_free(positions);
 }
 
 static bool is_final(const bitarray_t* const bitarray) {
-  const size_t bit_sz = bitarray->bit_sz;
-  const size_t buf_sz = bit_sz / 8;
-  const size_t num_extra_bits = bit_sz % 8;
-
-  // Fast checking (using 8 bits buffers) if all bits are 1s
-  for (size_t i=0; i < buf_sz; i++) {
-    if ((int)((uint8_t)bitarray->buf[i]) != 0xFF)
-      return false; 
-  }
-  // Test if remainings bits are all 1s
-  if (num_extra_bits > 0) {
-    for (size_t i=buf_sz*8; i<bit_sz; i++) {
-      if (!bitarray_get(bitarray, i))
-        return false;
-    }
-  }
-  return true;
+  return (find_unoccupied_idx(bitarray) == -1) ? true : false;
 }
 
 static long find_unoccupied_idx(const bitarray_t* const bitarray) {
@@ -394,7 +385,7 @@ static long find_unoccupied_idx(const bitarray_t* const bitarray) {
   const size_t buf_sz = bit_sz / 8;
   const size_t num_extra_bits = bit_sz % 8;
 
-  // Fast checking (using 8 bits buffers) if some buffers have 0s.
+  // Fast checking (using 8 bit buffers) if some bits within buffers have 0s.
   for (size_t i=0; i < buf_sz; i++) {
     if ((int)((uint8_t)bitarray->buf[i]) != 0xFF) {
       long current_bit = i*8;
@@ -404,7 +395,7 @@ static long find_unoccupied_idx(const bitarray_t* const bitarray) {
     }
   }
 
-  // Test if there are remainings bits that are unoccupued (bit value is 0)
+  // Test if any remainings bits are unoccupied (aka bit value is 0)
   if (num_extra_bits > 0) {
     for (long i=buf_sz*8; i<bit_sz; i++) {
       if (!bitarray_get(bitarray, i))
