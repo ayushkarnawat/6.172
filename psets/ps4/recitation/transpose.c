@@ -1,3 +1,10 @@
+/**
+ * Parallel in-place NxN matrix transpose.
+ * 
+ * TODO: Variable primitive data types (supporting long, double, etc.).
+ * TODO: NxM matrix transpose.
+ */
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
