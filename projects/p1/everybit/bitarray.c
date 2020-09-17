@@ -411,7 +411,7 @@ static long find_unoccupied_idx(const bitarray_t* const bitarray) {
 
   // Fast checking (using 8 bit buffers) if some bits within buffers have 0s.
   for (size_t i=0; i < buf_sz; i++) {
-    if ((int)((uint8_t)bitarray->buf[i]) != 0xFF) {
+    if ((uint8_t)bitarray->buf[i] != (uint8_t) 0xFF) {
       long current_bit = i*8;
       while (bitarray_get(bitarray, current_bit))
         ++current_bit;
