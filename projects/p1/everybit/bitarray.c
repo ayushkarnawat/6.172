@@ -109,8 +109,7 @@ static void bitarray_rotate_ab(bitarray_t* const bitarray,
  * 
  * Keep the temporay value of the bit along with its location between every
  * iteration. Move the bit stored in this temporary index to its new location.
- * Space complexity: O(1).
- * Time complexity: O(bit_length).
+ * Space complexity: O(1). Time complexity: O(bit_length).
  * 
  * The subarray spans the half-open interval [bit_offset, bit_offset +
  * bit_length). That is, the start is inclusive, but the end is exclusive.
@@ -143,6 +142,26 @@ inline static bool is_final(const bitarray_t* const bitarray);
  * @returns Unoccupied index; -1 if none are fdund
  */
 static long find_unoccupied_idx(const bitarray_t* const bitarray);
+
+/**
+ * @brief Rotates the subarray by performing reverse operations.
+ * 
+ * Consider the string to be rotated to be of the form `ab`, where `a` and `b`
+ * are bit strings. Observe the identity `(a^R b^R)^R = ba`, where `R` is the
+ * operation that reverses a string. The "reverse" operation can be
+ * accomplished using only constant storage. Thus, with 3 reversals of bit
+ * strings, the string can be rotated.
+ * 
+ * The subarray spans the half-open interval [bit_offset, bit_offset +
+ * bit_length). That is, the start is inclusive, but the end is exclusive.
+ * 
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @param bit_offset Index of the start of the subarray.
+ * @param bit_length Length of the subarray, in bits.
+ */
+static void bitarray_reverse(bitarray_t* const bitarray,
+                             const size_t bit_offset,
+                             const size_t bit_length);
 
 /**
  * @brief Portable modulo operation that supports negative dividends.
@@ -271,7 +290,12 @@ void bitarray_rotate(bitarray_t* const bitarray,
   // bitarray_rotate_left(bitarray, bit_offset, bit_length,
   //                      modulo(-bit_right_amount, bit_length));
   // bitarray_rotate_ab(bitarray, bit_offset, bit_length, k);
-  bitarray_rotate_cyclic(bitarray, bit_offset, bit_length, k);
+  // bitarray_rotate_cyclic(bitarray, bit_offset, bit_length, k);
+
+  // Rotate using bit reverse
+  bitarray_reverse(bitarray, bit_offset, bit_length - k);
+  bitarray_reverse(bitarray, bit_offset + bit_length - k, k);
+  bitarray_reverse(bitarray, bit_offset, bit_length);
 }
 
 static void bitarray_rotate_left(bitarray_t* const bitarray,
@@ -403,4 +427,26 @@ static long find_unoccupied_idx(const bitarray_t* const bitarray) {
     }
   }
   return -1;
+}
+
+static void bitarray_reverse(bitarray_t* const bitarray,
+                             const size_t bit_offset,
+                             const size_t bit_length) {
+  // Manually reverse bit by bit if within a single byte.
+  assert(bit_offset + bit_length <= bitarray_get_bit_sz(bitarray));
+
+  size_t start = bit_offset;
+  size_t end = bit_offset + bit_length - 1;
+  bool temp;
+
+  while (start < end) {
+    // Swaps the start and end bit
+    temp = bitarray_get(bitarray, start);
+    bitarray_set(bitarray, start, bitarray_get(bitarray, end));
+    bitarray_set(bitarray, end, temp);
+    // printf("start: %lu \t end: %lu \t temp: %d \t new: %d\n",
+    //        start, end, temp, bitarray_get(bitarray, end));
+    start++;
+    end--;
+  }
 }
