@@ -42,5 +42,7 @@ int timed_rotation(const double time_limit_seconds);
 // Runs the testsuite specified in a given file.
 void parse_and_run_tests(const char* filename, int min_test);
 
+void sample_test_a();
+
 #endif  // TESTS_H
 

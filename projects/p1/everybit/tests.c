@@ -406,14 +406,18 @@ void parse_and_run_tests(const char* filename, int selected_test) {
   fprintf(stderr, "Done testing file %s.\n", filename);
 }
 
-int _sample_test_a() {
+void sample_test_a() {
   bitarray_t* test = bitarray_new(10);
-  bitarray_randfill(test);
+  // bitarray_randfill(test);
+  size_t a[10] = {1,1,1,0,0,1,0,1,1,0};
+  for (size_t i = 0; i < bitarray_get_bit_sz(test); i++) {
+    bitarray_set(test, i, a[i]);
+  }
 
   bitarray_fprint(stdout, test);
   printf("\n");
 
-  bitarray_rotate(test, 1, 5, 2);
+  bitarray_rotate(test, 2, 5, 2);
   bitarray_fprint(stdout, test);
   printf("\n");
   bitarray_rotate(test, 1, 5, 3);
@@ -422,8 +426,7 @@ int _sample_test_a() {
   bitarray_rotate(test, 0, 4, 2);
   bitarray_fprint(stdout, test);
   printf("\n");
-
-  return 0;
+  return;
 }
 
 // Local Variables:
