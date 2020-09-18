@@ -287,11 +287,9 @@ static void bitarray_rotate_right_one(bitarray_t* const bitarray,
                                       const size_t bit_length) {
   // Grab the last bit in the bitarray, shift everything right by one,
   // and then stick the last bit at the front.
-  const bool last_bit = bitarray_get(bitarray, bit_offset+bit_length-1);
-  for (size_t idx = bit_offset+bit_length-1; idx < bit_offset; idx--) {
-    bitarray_set(bitarray, idx, bitarray_get(bitarray, idx-1));
-    printf("old_idx: %lu, new_idx: %lu, old_val: %d, new_val: %d \n",
-           idx, idx-1, bitarray_get(bitarray, idx), bitarray_get(bitarray, idx-1));
+  bool last_bit = bitarray_get(bitarray, bit_offset+bit_length-1);
+  for (size_t i = bit_offset+bit_length-1; i > bit_offset; i--) {
+    bitarray_set(bitarray, i, bitarray_get(bitarray, i-1));
   }
   bitarray_set(bitarray, bit_offset, last_bit);
 }
