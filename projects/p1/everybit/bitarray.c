@@ -84,7 +84,7 @@ static char bitmask(const size_t bit_index);
 static size_t modulo(const ssize_t n, const size_t m);
 
 /**
- * @brief Rotates a subarray left by one bit.
+ * @brief Rotates a subarray right by one bit.
  *
  * The subarray spans the half-open interval [bit_offset, bit_offset +
  * bit_length). That is, the start is inclusive, but the end is exclusive.
@@ -93,12 +93,12 @@ static size_t modulo(const ssize_t n, const size_t m);
  * @param bit_offset Index of the start of the subarray.
  * @param bit_length Length of the subarray, in bits.
  */
-static void bitarray_rotate_left_one(bitarray_t* const bitarray,
-                                     const size_t bit_offset,
-                                     const size_t bit_length);
+static void bitarray_rotate_right_one(bitarray_t* const bitarray,
+                                      const size_t bit_offset,
+                                      const size_t bit_length);
 
 /**
- * @brief Rotates a subarray left by an arbitrary number of bits.
+ * @brief Rotates a subarray right by an arbitrary number of bits.
  * 
  * The subarray spans the half-open interval [bit_offset, bit_offset +
  * bit_length). That is, the start is inclusive, but the end is exclusive.
@@ -106,12 +106,12 @@ static void bitarray_rotate_left_one(bitarray_t* const bitarray,
  * @param bitarray Pointer to bitarray to be rotated.
  * @param bit_offset Index of the start of the subarray.
  * @param bit_length Length of the subarray, in bits.
- * @param bit_left_amount Number of places to rotate the subarray left.
+ * @param bit_right_amount Number of places to rotate the subarray right.
  */
-static void bitarray_rotate_left(bitarray_t* const bitarray,
-                                 const size_t bit_offset,
-                                 const size_t bit_length,
-                                 const size_t bit_left_amount);
+static void bitarray_rotate_right(bitarray_t* const bitarray,
+                                  const size_t bit_offset,
+                                  const size_t bit_length,
+                                  const size_t bit_left_amount);
 
 /**
  * @brief Rotates subarray by transforming `ab` to `ba`.
@@ -282,25 +282,24 @@ static size_t modulo(const ssize_t n, const size_t m) {
   return (size_t)result;
 }
 
-static void bitarray_rotate_left_one(bitarray_t* const bitarray,
-                                     const size_t bit_offset,
-                                     const size_t bit_length) {
-  // Grab the first bit in the range, shift everything left by one, and
-  // then stick the first bit at the end.
-  const bool first_bit = bitarray_get(bitarray, bit_offset);
-  size_t i;
-  for (i = bit_offset; i + 1 < bit_offset + bit_length; i++) {
-    bitarray_set(bitarray, i, bitarray_get(bitarray, i + 1));
+static void bitarray_rotate_right_one(bitarray_t* const bitarray,
+                                      const size_t bit_offset,
+                                      const size_t bit_length) {
+  // Grab the last bit in the bitarray, shift everything right by one,
+  // and then stick the last bit at the front.
+  bool last_bit = bitarray_get(bitarray, bit_offset+bit_length-1);
+  for (size_t i = bit_offset+bit_length-1; i > bit_offset; i--) {
+    bitarray_set(bitarray, i, bitarray_get(bitarray, i-1));
   }
-  bitarray_set(bitarray, i, first_bit);
+  bitarray_set(bitarray, bit_offset, last_bit);
 }
 
-static void bitarray_rotate_left(bitarray_t* const bitarray,
-                                 const size_t bit_offset,
-                                 const size_t bit_length,
-                                 const size_t bit_left_amount) {
-  for (size_t i = 0; i < bit_left_amount; i++) {
-    bitarray_rotate_left_one(bitarray, bit_offset, bit_length);
+static void bitarray_rotate_right(bitarray_t* const bitarray,
+                                  const size_t bit_offset,
+                                  const size_t bit_length,
+                                  const size_t bit_right_amount) {
+  for (size_t i = 0; i < bit_right_amount; i++) {
+    bitarray_rotate_right_one(bitarray, bit_offset, bit_length);
   }
 }
 
@@ -454,8 +453,7 @@ void bitarray_rotate(bitarray_t* const bitarray,
   if (k == 0)
     return;
 
-  // bitarray_rotate_left(bitarray, bit_offset, bit_length,
-  //                      modulo(-bit_right_amount, bit_length));
+  // bitarray_rotate_right(bitarray, bit_offset, bit_length, k);
   // bitarray_rotate_ab(bitarray, bit_offset, bit_length, k);
   // bitarray_rotate_cyclic(bitarray, bit_offset, bit_length, k);
 
