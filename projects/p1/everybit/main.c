@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
       retval = EXIT_SUCCESS;
       goto cleanup;
     case 'a':
-      _sample_test_a();
+      sample_test_a();
       retval = EXIT_SUCCESS;
       goto cleanup;
     }
