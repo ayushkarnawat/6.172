@@ -2,3 +2,10 @@ screensaver
 job_*_in.tar
 log.cqrun/
 *.o
+
+# Cilk tools
+cilktool.h
+cilkutils.mk
+
+# AWS
+config.awsrun

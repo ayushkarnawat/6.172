@@ -72,13 +72,13 @@ endif
 
 
 # By default, make the product.
-all:		$(PRODUCT)
+all: $(PRODUCT)
 
 # How to build for profiling
-prof:		$(PROFILE_PRODUCT)
+prof: $(PROFILE_PRODUCT)
 
 lint:
-	python clint.py *.h *.c
+	python ../../clint.py *.h *.c
 
 
 # How to clean up
@@ -87,7 +87,7 @@ clean:
 
 
 # How to compile a C file
-%.o:		%.c $(HEADERS)
+%.o: %.c $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(EXTRA_CXXFLAGS) -o $@ -c $<
 
 # How to link the product
