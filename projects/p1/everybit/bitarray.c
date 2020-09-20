@@ -33,6 +33,11 @@
 #include <sys/types.h>
 
 
+const uint8_t BYTEFLIP_LOOKUP[16] = {
+  0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
+  0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf
+};
+
 // ********************************* Types **********************************
 
 // Concrete data type representing an array of bits.
@@ -176,6 +181,21 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
                                    const size_t bit_offset,
                                    const size_t bit_length,
                                    const ssize_t bit_right_amount);
+
+/**
+ * @brief Reverses the bitarray bit by bit.
+ * 
+ * NOTE: If a subarray is greater than a byte in length, then constantly
+ * swapping bits naively is bad for performance since we will be constantly
+ * accessing bits from different buffers (aka non-contiguous memory access).
+ * 
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @param bit_offset Index of the start of the subarray.
+ * @param bit_length Length of the subarray, in bits.
+ */
+static void bitarray_reverse_bit(bitarray_t* const bitarray,
+                                 const size_t bit_offset,
+                                 const size_t bit_length);
 
 /**
  * @brief Rotates the subarray by performing reverse operations.
@@ -400,10 +420,10 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
   bitarray_free(positions);
 }
 
-static void bitarray_reverse(bitarray_t* const bitarray,
-                             const size_t bit_offset,
-                             const size_t bit_length) {
-  // Manually reverse bit by bit if within a single byte.
+static void bitarray_reverse_bit(bitarray_t* const bitarray,
+                                 const size_t bit_offset,
+                                 const size_t bit_length) {
+  // Sanity check
   assert(bit_offset + bit_length <= bitarray_get_bit_sz(bitarray));
 
   size_t start = bit_offset;
@@ -415,19 +435,26 @@ static void bitarray_reverse(bitarray_t* const bitarray,
     temp = bitarray_get(bitarray, start);
     bitarray_set(bitarray, start, bitarray_get(bitarray, end));
     bitarray_set(bitarray, end, temp);
-    // printf("start: %lu \t end: %lu \t temp: %d \t new: %d\n",
-    //        start, end, temp, bitarray_get(bitarray, end));
     start++;
     end--;
   }
+}
 
-  // NOTE: If a subarray is greater than a byte in length, then constanly
-  // reversing bits from the opposite ends will probably result in bad
-  // performance since we will be constantly accessing bits from different
-  // buffers to swap them (aka non-contingous memory access).
-  // 
+static uint8_t reverse_byte(uint8_t bitarray) {
+  return (BYTEFLIP_LOOKUP[bitarray&0b1111] << 4) | BYTEFLIP_LOOKUP[bitarray>>4];
+}
+
+static void bitarray_reverse(bitarray_t* const bitarray,
+                             const size_t bit_offset,
+                             const size_t bit_length) {
+  // Manually reverse bit by bit if within a single byte.
+  if (bit_length <= 8) {
+    bitarray_reverse_bit(bitarray, bit_offset, bit_length);
+    return;
+  }
+
   // Rather, instead of reversing bit by bit, it is better to reverse the 8-bit
-  // buffer and leave the remainings bits to be reversed bit by bit. For
+  // buffers and leave the remaining bits to be reversed bit by bit. For
   // example, if a buffer is 0b11101011, then its reverse will be 0b11010111.
   // We save these buffer values and their complement in a precomputed list and
   // access them using the complement when needed. When replacing the buffers,
