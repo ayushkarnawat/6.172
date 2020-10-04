@@ -385,9 +385,9 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
                                    const size_t bit_offset,
                                    const size_t bit_length,
                                    const ssize_t bit_right_amount) {
-  // Are the bits in their final position? Initially, all the bits are in
-  // incorrect positions (represenetd by 0s). As the bits get placed into their
-  // correct positions, they become 1.
+  // Are the bits in their final position? Initially, all bits are in incorrect
+  // positions (represented by 0s). As the bits get placed into their correct
+  // positions, they become 1.
   bitarray_t* positions = bitarray_new(bit_length);
 
   size_t old_index = bit_offset;
@@ -426,10 +426,9 @@ static void bitarray_reverse_bit(bitarray_t* const bitarray,
   // Sanity check
   assert(bit_offset + bit_length <= bitarray_get_bit_sz(bitarray));
 
+  bool temp;
   size_t start = bit_offset;
   size_t end = bit_offset + bit_length - 1;
-  bool temp;
-
   while (start < end) {
     // Swaps the start and end bit
     temp = bitarray_get(bitarray, start);
@@ -441,22 +440,50 @@ static void bitarray_reverse_bit(bitarray_t* const bitarray,
 }
 
 static uint8_t reverse_byte(uint8_t bitarray) {
+  // Uses last 8 bits; if len of bitarray is less than 8 bits, assumes the
+  // higher bits are 0s.
   return (BYTEFLIP_LOOKUP[bitarray&0b1111] << 4) | BYTEFLIP_LOOKUP[bitarray>>4];
 }
 
 static void bitarray_reverse(bitarray_t* const bitarray,
                              const size_t bit_offset,
                              const size_t bit_length) {
-  // Manually reverse bit by bit if within a single byte.
+  // Manually reverse bits if within a single byte
   if (bit_length <= 8) {
     bitarray_reverse_bit(bitarray, bit_offset, bit_length);
     return;
   }
 
+  // Calculate indices of the partial bytes one each end of the substring.
+  // These bits are from index left_start (inclusive) to left_start+left_len
+  // (exclusive) and from right_start to right_start+right_len.
+
+  // Both the right_byte and left_byte can be atmost 8 bit bytes buffer. The
+  // ending bit index for left will always be at a multiple of 8; easier buffer
+  // access (without needing to access unnecessary bits from next buffer). 
+  // (8 - 10) % 8 = 6
+  // (10 + 21) % 8 = 5
+  size_t left_start = bit_offset;
+  size_t left_byte_length = (8 - bit_offset) % 8;
+  size_t right_byte_length = (bit_offset + bit_length) % 8; 
+  size_t right_start = bit_offset + bit_length - right_byte_length;
+
+  // Reverse the order of bits within each byte
+  size_t byte_start = (left_start + left_byte_length) / 8;
+  size_t byte_end = (right_start / 8); // exclusive
+  /// TODO: Check performance of access below? Does it result in cache miss,
+  /// since byte size is bigger than cache line?
+  uint8_t* left_byte = (uint8_t*) (bitarray->buf + byte_start);
+  uint8_t* right_byte = (uint8_t*) (bitarray->buf + (byte_end-1));
+  uint8_t temp;
+  
+  // Ref:
+  // https://github.com/albertyw/6.172/blob/master/project1/everybit/bitarray.c
+  
   // Rather, instead of reversing bit by bit, it is better to reverse the 8-bit
   // buffers and leave the remaining bits to be reversed bit by bit. For
   // example, if a buffer is 0b11101011, then its reverse will be 0b11010111.
-  // We save these buffer values and their complement in a precomputed list and
+  // We save these buffer values and their complement in a lookup table and
   // access them using the complement when needed. When replacing the buffers,
   // we store the whole buffer's complement in an auxillary array, move the old
   // buffer to its new location, and the new buffer to the old buffers
