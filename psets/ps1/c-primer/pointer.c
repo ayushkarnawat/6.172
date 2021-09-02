@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {  // What is the type of argv?
   int j = *pi;
 
   char c[] = "6.172";
-  char * pc = c;  // Valid assignment: c acts like a pointer to c[0] here.
+  char *pc = c;  // Valid assignment: c acts like a pointer to c[0] here.
   char d = *pc;
   printf("char d = %c\n", d);  // What does this print?
 
@@ -23,8 +23,8 @@ int main(int argc, char *argv[]) {  // What is the type of argv?
   char **pcp;
   pcp = argv;  // Why is this assignment valid?
 
-  const char * pcc = c;  // pcc is a pointer to char constant
-  char const * pcc2 = c;  // What is the type of pcc2?
+  const char *pcc = c;  // pcc is a pointer to char constant
+  char const *pcc2 = c;  // What is the type of pcc2?
 
   // For each of the following, why is the assignment:
   // *pcc = '7';  // invalid?

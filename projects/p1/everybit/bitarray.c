@@ -24,14 +24,19 @@
 // array containing bit_sz bits will consume roughly bit_sz/8 bytes of
 // memory.
 
+#include "./bitarray.h"
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
 
-#include "./bitarray.h"
 
+const uint8_t BYTEFLIP_LOOKUP[16] = {
+  0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
+  0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf
+};
 
 // ********************************* Types **********************************
 
@@ -50,23 +55,41 @@ struct bitarray {
 // ******************** Prototypes for static functions *********************
 
 /**
- * @brief Rotates a subarray left by an arbitrary number of bits.
+ * @brief Produces a mask which, when ANDed with a byte, retains only the
+ * bit_index th byte.
+ *
+ * (Note that here the index is counted from right to left, which is different
+ * from how we represent bitarrays in the tests.  This function is only used by
+ * bitarray_get and bitarray_set, however, so as long as you always use
+ * bitarray_get and bitarray_set to access bits in your bitarray, this reverse
+ * representation should not matter.
  * 
- * The subarray spans the half-open interval [bit_offset, bit_offset +
- * bit_length). That is, the start is inclusive, but the end is exclusive.
- * 
- * @param bitarray Pointer to bitarray to be rotated.
- * @param bit_offset Index of the start of the subarray.
- * @param bit_length Length of the subarray, in bits.
- * @param bit_left_amount Number of places to rotate the subarray left.
+ * @param bit_index Index which represents bit.
+ * @returns Char representation of the mask containing `bit_index`th byte.
+ * @example bitmask(5) = 0b00100000.
  */
-static void bitarray_rotate_right(bitarray_t* const bitarray,
-                                  const size_t bit_offset,
-                                  const size_t bit_length,
-                                  const size_t bit_right_amount);
+static char bitmask(const size_t bit_index);
 
 /**
- * @brief Rotates a subarray left by one bit.
+ * @brief Portable modulo operation that supports negative dividends.
+ * 
+ * Many programming languages define modulo in a manner incompatible with its
+ * widely-accepted mathematical definition. http://stackoverflow.com/q/1907565/
+ * provides details; in particular, C's modulo operator (which the standard
+ * calls a "remainder" operator) yields a result signed identically to the
+ * dividend e.g., -1 % 10 yields -1. This is obviously unacceptable for a
+ * function which returns size_t, so we define our own.
+ * 
+ * @param n Dividend.
+ * @param m Divisor.
+ * @returns Positive integer `r = n (mod m)`, in the range `[0,m)`.
+ * @example modulo(3, 5) = 3
+ * @example modulo(-1, 10) = 9
+ */
+static size_t modulo(const ssize_t n, const size_t m);
+
+/**
+ * @brief Rotates a subarray right by one bit.
  *
  * The subarray spans the half-open interval [bit_offset, bit_offset +
  * bit_length). That is, the start is inclusive, but the end is exclusive.
@@ -78,6 +101,22 @@ static void bitarray_rotate_right(bitarray_t* const bitarray,
 static void bitarray_rotate_right_one(bitarray_t* const bitarray,
                                       const size_t bit_offset,
                                       const size_t bit_length);
+
+/**
+ * @brief Rotates a subarray right by an arbitrary number of bits.
+ * 
+ * The subarray spans the half-open interval [bit_offset, bit_offset +
+ * bit_length). That is, the start is inclusive, but the end is exclusive.
+ * 
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @param bit_offset Index of the start of the subarray.
+ * @param bit_length Length of the subarray, in bits.
+ * @param bit_right_amount Number of places to rotate the subarray right.
+ */
+static void bitarray_rotate_right(bitarray_t* const bitarray,
+                                  const size_t bit_offset,
+                                  const size_t bit_length,
+                                  const size_t bit_left_amount);
 
 /**
  * @brief Rotates subarray by transforming `ab` to `ba`.
@@ -104,13 +143,28 @@ static void bitarray_rotate_ab(bitarray_t* const bitarray,
                                const ssize_t bit_right_amount);
 
 /**
+ * @brief Find first instance of unoccupied index in the bitarray.
+ * 
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @returns Unoccupied index; -1 if none are fdund
+ */
+static long find_unoccupied_idx(const bitarray_t* const bitarray);
+
+/**
+ * @brief Check if all the bits are in their final positions (all 1s).
+ * 
+ * @param bitarray Pointer to bitarray to be rotated.
+ * @returns true if all bits are 1s; false otherwise. 
+ */
+inline static bool is_final(const bitarray_t* const bitarray);
+
+/**
  * @brief Rotates subarray by moving each bit to its specified location
  * directly.
  * 
  * Keep the temporay value of the bit along with its location between every
  * iteration. Move the bit stored in this temporary index to its new location.
- * Space complexity: O(1).
- * Time complexity: O(bit_length).
+ * Space complexity: O(1). Time complexity: O(bit_length).
  * 
  * The subarray spans the half-open interval [bit_offset, bit_offset +
  * bit_length). That is, the start is inclusive, but the end is exclusive.
@@ -129,54 +183,39 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
                                    const ssize_t bit_right_amount);
 
 /**
- * @brief Check if all the bits are in their final positions (all 1s).
+ * @brief Reverses the bitarray bit by bit.
+ * 
+ * NOTE: If a subarray is greater than a byte in length, then constantly
+ * swapping bits naively is bad for performance since we will be constantly
+ * accessing bits from different buffers (aka non-contiguous memory access).
  * 
  * @param bitarray Pointer to bitarray to be rotated.
- * @returns true if all bits are 1s; false otherwise. 
+ * @param bit_offset Index of the start of the subarray.
+ * @param bit_length Length of the subarray, in bits.
  */
-inline static bool is_final(const bitarray_t* const bitarray);
+static void bitarray_reverse_bit(bitarray_t* const bitarray,
+                                 const size_t bit_offset,
+                                 const size_t bit_length);
 
 /**
- * @brief Find first instance of unoccupied index in the bitarray.
+ * @brief Rotates the subarray by performing reverse operations.
+ * 
+ * Consider the string to be rotated to be of the form `ab`, where `a` and `b`
+ * are bit strings. Observe the identity `(a^R b^R)^R = ba`, where `R` is the
+ * operation that reverses a string. The "reverse" operation can be
+ * accomplished using only constant storage. Thus, with 3 reversals of bit
+ * strings, the string can be rotated.
+ * 
+ * The subarray spans the half-open interval [bit_offset, bit_offset +
+ * bit_length). That is, the start is inclusive, but the end is exclusive.
  * 
  * @param bitarray Pointer to bitarray to be rotated.
- * @returns Unoccupied index; -1 if none are fdund
+ * @param bit_offset Index of the start of the subarray.
+ * @param bit_length Length of the subarray, in bits.
  */
-static long find_unoccupied_idx(const bitarray_t* const bitarray);
-
-/**
- * @brief Portable modulo operation that supports negative dividends.
- * 
- * Many programming languages define modulo in a manner incompatible with its
- * widely-accepted mathematical definition. http://stackoverflow.com/q/1907565/
- * provides details; in particular, C's modulo operator (which the standard
- * calls a "remainder" operator) yields a result signed identically to the
- * dividend e.g., -1 % 10 yields -1. This is obviously unacceptable for a
- * function which returns size_t, so we define our own.
- * 
- * @param n Dividend.
- * @param m Divisor.
- * @returns Positive integer `r = n (mod m)`, in the range `[0,m)`.
- * @example modulo(3, 5) = 3
- * @example modulo(-1, 10) = 9
- */
-static size_t modulo(const ssize_t n, const size_t m);
-
-/**
- * @brief Produces a mask which, when ANDed with a byte, retains only the
- * bit_index th byte.
- *
- * (Note that here the index is counted from right to left, which is different
- * from how we represent bitarrays in the tests.  This function is only used by
- * bitarray_get and bitarray_set, however, so as long as you always use
- * bitarray_get and bitarray_set to access bits in your bitarray, this reverse
- * representation should not matter.
- * 
- * @param bit_index Index which represents bit.
- * @returns Char representation of the mask containing `bit_index`th byte.
- * @example bitmask(5) = 0b00100000.
- */
-static char bitmask(const size_t bit_index);
+static void bitarray_reverse(bitarray_t* const bitarray,
+                             const size_t bit_offset,
+                             const size_t bit_length);
 
 
 // ******************************* Functions ********************************
@@ -251,35 +290,16 @@ void bitarray_randfill(bitarray_t* const bitarray){
   }
 }
 
-void bitarray_rotate(bitarray_t* const bitarray,
-                     const size_t bit_offset,
-                     const size_t bit_length,
-                     const ssize_t bit_right_amount) {
-  assert(bit_offset + bit_length <= bitarray->bit_sz);
-
-  // Don't do anything if there's nothing to rotate
-  if (bit_length <= 1)
-    return;
-
-  // Converts rotates in either direction to a right rotate
-  size_t k = modulo(bit_right_amount, bit_length);
-
-  // Don't do anything if it's not being rotated
-  if (k == 0)
-    return;
-
-  bitarray_rotate_right(bitarray, bit_offset, bit_length, k);
-  // bitarray_rotate_ab(bitarray, bit_offset, bit_length, k);
-  // bitarray_rotate_cyclic(bitarray, bit_offset, bit_length, k);
+static char bitmask(const size_t bit_index) {
+  return 1 << (bit_index % 8);
 }
 
-static void bitarray_rotate_right(bitarray_t* const bitarray,
-                                  const size_t bit_offset,
-                                  const size_t bit_length,
-                                  const size_t bit_right_amount) {
-  for (size_t i = 0; i < bit_right_amount; i++) {
-    bitarray_rotate_right_one(bitarray, bit_offset, bit_length);
-  }
+static size_t modulo(const ssize_t n, const size_t m) {
+  const ssize_t signed_m = (ssize_t)m;
+  assert(signed_m > 0);
+  const ssize_t result = ((n % signed_m) + signed_m) % signed_m;
+  assert(result >= 0);
+  return (size_t)result;
 }
 
 static void bitarray_rotate_right_one(bitarray_t* const bitarray,
@@ -294,16 +314,13 @@ static void bitarray_rotate_right_one(bitarray_t* const bitarray,
   bitarray_set(bitarray, bit_offset, last_bit);
 }
 
-static size_t modulo(const ssize_t n, const size_t m) {
-  const ssize_t signed_m = (ssize_t)m;
-  assert(signed_m > 0);
-  const ssize_t result = ((n % signed_m) + signed_m) % signed_m;
-  assert(result >= 0);
-  return (size_t)result;
-}
-
-static char bitmask(const size_t bit_index) {
-  return 1 << (bit_index % 8);
+static void bitarray_rotate_right(bitarray_t* const bitarray,
+                                  const size_t bit_offset,
+                                  const size_t bit_length,
+                                  const size_t bit_right_amount) {
+  for (size_t i = 0; i < bit_right_amount; i++) {
+    bitarray_rotate_right_one(bitarray, bit_offset, bit_length);
+  }
 }
 
 static void bitarray_rotate_ab(bitarray_t* const bitarray,
@@ -335,13 +352,42 @@ static void bitarray_rotate_ab(bitarray_t* const bitarray,
   bitarray_free(aux);
 }
 
+static long find_unoccupied_idx(const bitarray_t* const bitarray) {
+  const size_t bit_sz = bitarray->bit_sz;
+  const size_t buf_sz = bit_sz / 8;
+  const size_t num_extra_bits = bit_sz % 8;
+
+  // Fast checking (using 8 bit buffers) if some bits within buffers have 0s.
+  for (size_t i=0; i < buf_sz; i++) {
+    if ((uint8_t)bitarray->buf[i] != (uint8_t) 0xFF) {
+      long current_bit = i*8;
+      while (bitarray_get(bitarray, current_bit))
+        ++current_bit;
+      return current_bit;
+    }
+  }
+
+  // Test if any remainings bits are unoccupied (aka bit value is 0)
+  if (num_extra_bits > 0) {
+    for (long i=buf_sz*8; i<bit_sz; i++) {
+      if (!bitarray_get(bitarray, i))
+        return i;
+    }
+  }
+  return -1;
+}
+
+inline static bool is_final(const bitarray_t* const bitarray) {
+  return (find_unoccupied_idx(bitarray) == -1) ? true : false;
+}
+
 static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
                                    const size_t bit_offset,
                                    const size_t bit_length,
                                    const ssize_t bit_right_amount) {
-  // Are the bits in their final position? Initially, all the bits are in
-  // incorrect positions (represenetd by 0s). As the bits get placed into their
-  // correct positions, they become 1.
+  // Are the bits in their final position? Initially, all bits are in incorrect
+  // positions (represented by 0s). As the bits get placed into their correct
+  // positions, they become 1.
   bitarray_t* positions = bitarray_new(bit_length);
 
   size_t old_index = bit_offset;
@@ -374,31 +420,99 @@ static void bitarray_rotate_cyclic(bitarray_t* const bitarray,
   bitarray_free(positions);
 }
 
-inline static bool is_final(const bitarray_t* const bitarray) {
-  return (find_unoccupied_idx(bitarray) == -1) ? true : false;
+static void bitarray_reverse_bit(bitarray_t* const bitarray,
+                                 const size_t bit_offset,
+                                 const size_t bit_length) {
+  // Sanity check
+  assert(bit_offset + bit_length <= bitarray_get_bit_sz(bitarray));
+
+  bool temp;
+  size_t start = bit_offset;
+  size_t end = bit_offset + bit_length - 1;
+  while (start < end) {
+    // Swaps the start and end bit
+    temp = bitarray_get(bitarray, start);
+    bitarray_set(bitarray, start, bitarray_get(bitarray, end));
+    bitarray_set(bitarray, end, temp);
+    start++;
+    end--;
+  }
 }
 
-static long find_unoccupied_idx(const bitarray_t* const bitarray) {
-  const size_t bit_sz = bitarray->bit_sz;
-  const size_t buf_sz = bit_sz / 8;
-  const size_t num_extra_bits = bit_sz % 8;
+static uint8_t reverse_byte(uint8_t bitarray) {
+  // Uses last 8 bits; if len of bitarray is less than 8 bits, assumes the
+  // higher bits are 0s.
+  return (BYTEFLIP_LOOKUP[bitarray&0b1111] << 4) | BYTEFLIP_LOOKUP[bitarray>>4];
+}
 
-  // Fast checking (using 8 bit buffers) if some bits within buffers have 0s.
-  for (size_t i=0; i < buf_sz; i++) {
-    if ((int)((uint8_t)bitarray->buf[i]) != 0xFF) {
-      long current_bit = i*8;
-      while (bitarray_get(bitarray, current_bit))
-        ++current_bit;
-      return current_bit;
-    }
+static void bitarray_reverse(bitarray_t* const bitarray,
+                             const size_t bit_offset,
+                             const size_t bit_length) {
+  // Manually reverse bits if within a single byte
+  if (bit_length <= 8) {
+    bitarray_reverse_bit(bitarray, bit_offset, bit_length);
+    return;
   }
 
-  // Test if any remainings bits are unoccupied (aka bit value is 0)
-  if (num_extra_bits > 0) {
-    for (long i=buf_sz*8; i<bit_sz; i++) {
-      if (!bitarray_get(bitarray, i))
-        return i;
-    }
-  }
-  return -1;
+  // Calculate indices of the partial bytes one each end of the substring.
+  // These bits are from index left_start (inclusive) to left_start+left_len
+  // (exclusive) and from right_start to right_start+right_len.
+
+  // Both the right_byte and left_byte can be atmost 8 bit bytes buffer. The
+  // ending bit index for left will always be at a multiple of 8; easier buffer
+  // access (without needing to access unnecessary bits from next buffer). 
+  // (8 - 10) % 8 = 6
+  // (10 + 21) % 8 = 5
+  size_t left_start = bit_offset;
+  size_t left_byte_length = (8 - bit_offset) % 8;
+  size_t right_byte_length = (bit_offset + bit_length) % 8; 
+  size_t right_start = bit_offset + bit_length - right_byte_length;
+
+  // Reverse the order of bits within each byte
+  size_t byte_start = (left_start + left_byte_length) / 8;
+  size_t byte_end = (right_start / 8); // exclusive
+  /// TODO: Check performance of access below? Does it result in cache miss,
+  /// since byte size is bigger than cache line?
+  uint8_t* left_byte = (uint8_t*) (bitarray->buf + byte_start);
+  uint8_t* right_byte = (uint8_t*) (bitarray->buf + (byte_end-1));
+  uint8_t temp;
+  
+  // Ref:
+  // https://github.com/albertyw/6.172/blob/master/project1/everybit/bitarray.c
+  
+  // Rather, instead of reversing bit by bit, it is better to reverse the 8-bit
+  // buffers and leave the remaining bits to be reversed bit by bit. For
+  // example, if a buffer is 0b11101011, then its reverse will be 0b11010111.
+  // We save these buffer values and their complement in a lookup table and
+  // access them using the complement when needed. When replacing the buffers,
+  // we store the whole buffer's complement in an auxillary array, move the old
+  // buffer to its new location, and the new buffer to the old buffers
+  // location. We can then move this buffer altogether to its final position.
+}
+
+void bitarray_rotate(bitarray_t* const bitarray,
+                     const size_t bit_offset,
+                     const size_t bit_length,
+                     const ssize_t bit_right_amount) {
+  assert(bit_offset + bit_length <= bitarray->bit_sz);
+
+  // Don't do anything if there's nothing to rotate
+  if (bit_length <= 1)
+    return;
+
+  // Converts rotates in either direction to a right rotate
+  size_t k = modulo(bit_right_amount, bit_length);
+
+  // Don't do anything if it's not being rotated
+  if (k == 0)
+    return;
+
+  // bitarray_rotate_right(bitarray, bit_offset, bit_length, k);
+  // bitarray_rotate_ab(bitarray, bit_offset, bit_length, k);
+  // bitarray_rotate_cyclic(bitarray, bit_offset, bit_length, k);
+
+  // Rotate using bit reverse
+  bitarray_reverse(bitarray, bit_offset, bit_length - k);
+  bitarray_reverse(bitarray, bit_offset + bit_length - k, k);
+  bitarray_reverse(bitarray, bit_offset, bit_length);
 }

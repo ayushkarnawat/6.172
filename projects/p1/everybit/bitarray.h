@@ -44,9 +44,6 @@ void bitarray_free(bitarray_t* const bitarray);
 // Note the invariant bitarray_get_bit_sz(bitarray_new(n)) = n.
 size_t bitarray_get_bit_sz(const bitarray_t* const bitarray);
 
-// Does a random fill of all the bits in the bit array.
-void bitarray_randfill(bitarray_t* const bitarray);
-
 // Indexes into a bit array, retreiving the bit at the specified zero-based
 // index.
 bool bitarray_get(const bitarray_t* const bitarray, const size_t bit_index);
@@ -55,6 +52,9 @@ bool bitarray_get(const bitarray_t* const bitarray, const size_t bit_index);
 void bitarray_set(bitarray_t* const bitarray,
                   const size_t bit_index,
                   const bool value);
+
+// Does a random fill of all the bits in the bit array.
+void bitarray_randfill(bitarray_t* const bitarray);
 
 // Rotates a subarray.
 //

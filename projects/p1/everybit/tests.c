@@ -178,7 +178,7 @@ void testutil_frmstr(const char* const bitstring) {
     current_bit = boolfromchar(bitstring[i]);
     bitarray_set(test_bitarray, i, current_bit);
   }
-  bitarray_fprint(stdout, test_bitarray);
+  // bitarray_fprint(stdout, test_bitarray);
   if (test_verbose) {
     fprintf(stdout, " newstr lit=%s\n", bitstring);
     testutil_expect(bitstring);
@@ -292,7 +292,7 @@ int timed_rotation(const double time_limit_seconds) {
 
     // Initialize a new bit_array
     testutil_newrand(bit_sz, 6172);
- 
+
     // Time the duration of a rotation
     const clockmark_t start_time = ktiming_getmark();
     testutil_rotate(bit_offset, bit_length, bit_right_shift_amount);
@@ -342,7 +342,7 @@ char* next_arg_char() {
 
 void parse_and_run_tests(const char* filename, int selected_test) {
   test_verbose = false;
-  fprintf(stderr, "Testing file %s.\n", filename);
+  fprintf(stdout, "Testing file %s.\n", filename);
   FILE* f = fopen(filename, "r");
 
   char* buf = NULL;
@@ -368,7 +368,7 @@ void parse_and_run_tests(const char* filename, int selected_test) {
         continue;
       }
 
-      fprintf(stderr, "\nRunning test #%d...\n", test);
+      fprintf(stdout, "\nRunning test #%d...\n", test);
       break;
     case 'n':
       if (!ready_to_run) {
@@ -402,8 +402,7 @@ void parse_and_run_tests(const char* filename, int selected_test) {
     }
   }
   free(buf);
-
-  fprintf(stderr, "Done testing file %s.\n", filename);
+  fprintf(stdout, "Done testing file %s.\n", filename);
 }
 
 void sample_test_a() {
@@ -426,7 +425,7 @@ void sample_test_a() {
   bitarray_rotate(test, 0, 4, 2);
   bitarray_fprint(stdout, test);
   printf("\n");
-  return;
+  bitarray_free(test);
 }
 
 // Local Variables:

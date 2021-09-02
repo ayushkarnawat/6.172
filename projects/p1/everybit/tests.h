@@ -23,13 +23,12 @@
 #ifndef TESTS_H
 #define TESTS_H
 
+#include "./bitarray.h"
+
 #include <assert.h>
 #include <stdbool.h>
 #include <string.h>
-
 #include <sys/types.h>
-
-#include "./bitarray.h"
 
 
 // ******************************* Prototypes *******************************
