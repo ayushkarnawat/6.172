@@ -6,7 +6,6 @@
 // Macros can also behave similar to inline functions.
 // Note that parentheses around arguments are required to preserve order of
 // operations. Otherwise, you can introduce bugs when substitution happens
-
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 int c = ONE, d = ONE + 5;

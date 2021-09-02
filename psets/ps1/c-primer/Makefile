@@ -7,7 +7,7 @@ else
 endif
 
 # LDFLAGS := -lrt -flto -fuse-ld=gold
-LDFLAGS := 
+LDFLAGS :=
 
 all: sizes pointer swap
 
@@ -30,4 +30,4 @@ swap: swap.o
 	$(CC) -o swap swap.o $(LDFLAGS)
 
 clean:
-	rm -f sizes pointer swap *.o *.gcda *.gcno *.gcov perf.data */perf.data cachegrind.out.*
+	rm -f sizes pointer swap *.o *.gcda *.gcno *.gcov perf.data */perf.data
