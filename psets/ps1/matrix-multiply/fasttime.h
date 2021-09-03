@@ -20,8 +20,8 @@
  * IN THE SOFTWARE.
  **/
 
-#ifndef INCLUDED_FASTTIME_DOT_H
-#define INCLUDED_FASTTIME_DOT_H
+#ifndef FASTTIME_H
+#define FASTTIME_H
 
 #include <assert.h>
 
@@ -45,7 +45,7 @@ static inline double tdiff(fasttime_t start, fasttime_t end) {
   int r = mach_timebase_info(&timebase);
   assert(r == 0);
   fasttime_t elapsed = end-start;
-  double ns = (double)elapsed * timebase.numer / timebase.denom;
+  double ns = (double) elapsed * timebase.numer / timebase.denom;
   return ns*1e-9;
 }
 
@@ -92,4 +92,4 @@ time_t time(time_t *) __attribute__((deprecated));
 
 #endif  // LINUX
 
-#endif  // INCLUDED_FASTTIME_DOT_H
+#endif  // FASTTIME_H
