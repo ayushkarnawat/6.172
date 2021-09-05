@@ -46,11 +46,11 @@ int main(int argc, char** argv) {
   // Always use the same seed, so that our tests are repeatable.
   unsigned int randomSeed = 1;
 
-  matrix* A;
-  matrix* B;
-  matrix* C;
+  matrix_t* A;
+  matrix_t* B;
+  matrix_t* C;
 
-  const int kMatrixSize = 1000;
+  const int kMatrixSize = 10;
 
   // Parse command line arguments
   while ((optchar = getopt(argc, argv, "upz")) != -1) {
@@ -70,12 +70,12 @@ int main(int argc, char** argv) {
     }
   }
 
-  // This is a trick to make the memory bug leads to a wrong output.
+  // A trick to make a memory bug -- leads to a wrong output.
   int size = sizeof(int) * 4;
   int* temp[20];
 
   for (int i = 0; i < 20; i++) {
-    temp[i] = (int*)malloc(size);
+    temp[i] = (int*) malloc(size);
     memset(temp[i], 1, size);
   }
   int total = 0;

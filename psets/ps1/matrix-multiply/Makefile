@@ -19,7 +19,7 @@ PRODUCT := matrix_multiply
 CC := clang
 
 # These flags will be applied to your code any time it is built.
-CFLAGS := -Wall -std=c99 -D_POSIX_C_SOURCE=200809L
+CFLAGS := -Wall -std=c11 -m64 -D_POSIX_C_SOURCE=200809L
 
 # These flags are applied only if you build your code with "make DEBUG=1".  -g
 # generates debugging symbols, -DDEBUG defines the preprocessor symbol "DEBUG"
@@ -34,7 +34,7 @@ CFLAGS_DEBUG := -g -DDEBUG -O0
 CFLAGS_RELEASE := -O3 -DNDEBUG
 
 # These flags are used to invoke Clang's address sanitizer.
-CFLAGS_ASAN := -O1 -g -fsanitize=address
+CFLAGS_ASAN := -O1 -g -fsanitize=address -fno-omit-frame-pointer
 
 # These flags are applied when linking object files together into your binary.
 # If you need to link against libraries, add the appropriate flags here.  By

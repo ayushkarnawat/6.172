@@ -34,25 +34,39 @@
  * Deviating from this API may cause your program to fail all of our tests.
  **/
 
-#ifndef MATRIX_MULTIPLY_H_INCLUDED
+#ifndef MATRIX_MULTIPLY_H
+#define MATRIX_MULTIPLY_H
 
-#define MATRIX_MULTIPLY_H_INCLUDED
+typedef struct matrix {
+  int rows;     // num of rows
+  int cols;     // num of cols
+  int** values; // pointers to values
+} matrix_t;
 
-typedef struct {
-  int rows;
-  int cols;
-  int** values;
-} matrix;
+/**
+ * @brief Allocate a matrix with size defined by the num of rows and columns.
+ *
+ * @returns Empty matrix with defined size.
+ */
+matrix_t* make_matrix(int rows, int cols);
 
-// Multiply matrix A*B, store result in C.
-int matrix_multiply_run(const matrix* A, const matrix* B, matrix* C);
+/**
+ * @brief Free an allocated matrix.
+ */
+void free_matrix(matrix_t* m);
 
-// Allocates a row-by-cols matrix and returns it
-matrix* make_matrix(int rows, int cols);
+/**
+ * @brief Print matrix.
+ */
+void print_matrix(const matrix_t* m);
 
-// Frees an allocated matrix
-void free_matrix(matrix* m);
+/**
+ * @brief Multiply matrices A*B, store result in C.
+ *
+ * @param a Real-valued matrix of size n x k.
+ * @param b Real-valued matrix of size k x m.
+ * @param c Real-valued matrix of size n x m where result of A*B is stored.
+ */
+void matrix_multiply_run(const matrix_t* a, const matrix_t* b, matrix_t* c);
 
-// Print matrix
-void print_matrix(const matrix* m);
-#endif  // MATRIX_MULTIPLY_H_INCLUDED
+#endif  // MATRIX_MULTIPLY_H
