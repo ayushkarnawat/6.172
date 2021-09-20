@@ -221,27 +221,19 @@ with nixpkgs;
 # in
 
 let
-  pprof = buildGoPackage rec {
-    # NOTE: We are building an older version of pprof instead of the latest HEAD
-    # as that version cannot be built (errors with cgo/SWIG not being available
-    # when testing compilation of C files). More details: https://git.io/Jzvzn
+  pprof = buildGoModule rec {
     pname = "pprof-unstable";
-    version = "2020-12-17";
-    rev = "b9804c9f04c2d0c7bbd1af5129f853563f990541";
-    # version = "2021-08-27";
-    # rev = "02619b876842e0d0afb5e5580d3a374dad740edb";
-
-    # nativeBuildInputs = [ swig4 cgo ];
-    goPackagePath = "github.com/google/pprof";
+    version = "2021-08-27";
+    rev = "02619b876842e0d0afb5e5580d3a374dad740edb";
 
     src = fetchgit {
       inherit rev;
       url = "git://github.com/google/pprof";
-      sha256 = "0znp0z2450l7cg7k98l7b4klp5ncx03619clxzb7ld8cdqc6l4dc";
-      # sha256 = "0j9y1a8hcbmd6rk0lmlqlxyzbnn9a0qnfh3g78cyip3wk9z47p0d";
+      sha256 = "0j9y1a8hcbmd6rk0lmlqlxyzbnn9a0qnfh3g78cyip3wk9z47p0d";
     };
 
-    goDeps = ./deps.nix;
+    vendorSha256 = "0yl8y3m2ia3cwxhmg1km8358a0225khimv6hcvras8r2glm69h3f";
+    runVend = false; # no (current) dependencies contain C files
 
     meta = with lib; {
       description = "A tool for visualization and analysis of profiling data";
@@ -291,12 +283,6 @@ nixpkgs.mkShell {
     clang_dir=$(ls -l /nix/store/ | grep ${llvmPackages_11.clang.pname + "-" +
       llvmPackages_11.clang.version} | grep '^d' | awk '/ / {print $NF}')
     export PATH="/nix/store/$clang_dir/bin:$PATH"
-
-    # Use latest pprof (github HEAD)
-    # NOTE: to delete go pkgs: `go get pprof@none`, then delete $HOME/go dir
-    # export GOPATH="$HOME/go/"
-    # go get -u github.com/google/pprof
-    # export PATH="$GOPATH/bin:$PATH"
 
     pprof_dir=$(ls -l /nix/store/ | grep ${pprof.pname + "-" + pprof.version} \
       | grep '^d' | awk '/ / {print $NF}')
