@@ -2,24 +2,25 @@ CC := clang
 LDFLAGS := # -lrt
 
 ifeq ($(DEBUG),1)
-	CFLAGS := -Wall -O0 -g
+CFLAGS := -Wall -g -fno-omit-frame-pointer
+LDFLAGS += -lprofiler
 else
-	CFLAGS := -Wall -O1 -DNDEBUG 
+CFLAGS := -Wall -O3 -DNDEBUG
 endif
 
 all: isort sum
 
-isort.o: isort.c 
-	$(CC) $(CFLAGS) -c isort.c 
+isort.o: isort.c
+	$(CC) $(CFLAGS) -c isort.c
 
-qsort.o: qsort.c 
-	$(CC) $(CFLAGS) -c qsort.c 
+qsort.o: qsort.c
+	$(CC) $(CFLAGS) -c qsort.c
 
 isort: isort.o qsort.o
 	$(CC) -o isort isort.o qsort.o $(LDFLAGS)
 
-sum.o: sum.c 
-	$(CC) $(CFLAGS) -c sum.c 
+sum.o: sum.c
+	$(CC) $(CFLAGS) -c sum.c
 
 sum: sum.o
 	$(CC) -o sum sum.o $(LDFLAGS)
