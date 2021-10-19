@@ -1,9 +1,10 @@
 CC := clang
+CXX := clang++
 LDFLAGS := # -lrt
 
 ifeq ($(DEBUG),1)
-CFLAGS := -Wall -g -fno-omit-frame-pointer
-LDFLAGS += -lprofiler
+CFLAGS := -Wall -g -Og -fno-omit-frame-pointer -fsanitize=address
+LDFLAGS += -fsanitize=address -lprofiler
 else
 CFLAGS := -Wall -O3 -DNDEBUG
 endif
@@ -18,12 +19,24 @@ qsort.o: qsort.c
 
 isort: isort.o qsort.o
 	$(CC) -o isort isort.o qsort.o $(LDFLAGS)
+ifeq ($(DEBUG),1)
+	dsymutil isort
+	CPUPROFILE=isort.prof ./isort 10000 10
+	PPROF_BINARY_PATH=./
+	pprof -list '.*' isort.prof
+endif
 
 sum.o: sum.c
 	$(CC) $(CFLAGS) -c sum.c
 
 sum: sum.o
 	$(CC) -o sum sum.o $(LDFLAGS)
+ifeq ($(DEBUG),1)
+	dsymutil sum
+	CPUPROFILE=sum.prof ./sum
+	PPROF_BINARY_PATH=./
+	pprof -list '.*' sum.prof
+endif
 
 clean:
-	rm -f isort sum *.o *.gcda *.gcno *.gcov perf.data */perf.data cachegrind.out.*
+	rm -rf isort sum *.o *.prof *.dSYM *.dylib perf.data */perf.data cachegrind.out.*

@@ -51,11 +51,11 @@ int main(int argc, char* argv[]) {
     //  printf("\n");
 
     isort(data, data + N - 1);
-    //quickSortIterative(data, 0, N);
-    for (i = 0; i < N; i++) {
-      printf("%d ", data[i]);
-    }
-    printf("\n");
+    // quickSortIterative(data, 0, N);
+    // for (i = 0; i < N; i++) {
+    //   printf("%d ", data[i]);
+    // }
+    // printf("\n");
   }
   free(data);
   printf("Done!\n");
