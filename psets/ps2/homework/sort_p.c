@@ -23,15 +23,17 @@
 #include "./util.h"
 
 
+// ******************** Prototypes for static functions *********************
+
 // A merge routine. Merges the sub-arrays A [p..q] and A [q + 1..r].
 // Uses two arrays 'left' and 'right' in the merge operation.
-static inline void merge_p(data_t* A, int p, int q, int r);
+static void merge_p(data_t* A, int p, int q, int r);
 
-// Copy values from source to destination. 
-static inline void copy_p(data_t* source, data_t* dest, int n);
+// Copy values from source to destination.
+static void copy_p(data_t* source, data_t* dest, int n);
 
+// ******************************* Functions ********************************
 
-// A basic merge sort routine that sorts the subarray A[p..r]
 void sort_p(data_t* A, int p, int r) {
   assert(A);
   if (p < r) {
@@ -66,7 +68,7 @@ static inline void merge_p(data_t* A, int p, int q, int r) {
   int i = 0;
   int j = 0;
 
-  // access using ptrs rather than idxs, better for memory efficency
+  // access using ptrs (better memory efficency)
   for (int k = p; k <= r; k++) {
     if (*(left+i) <= *(right+j)) {
       *(A+k) = *(left+i); // A[k] = left[i]
@@ -84,7 +86,7 @@ static inline void copy_p(data_t* source, data_t* dest, int n) {
   assert(dest);
   assert(source);
 
-  // access use ptrs instead of array idxs
+  // use pointers instead of idxs
   for (int i = 0 ; i < n ; i++) {
     *(dest+i) = *(source+i);
   }

@@ -20,19 +20,21 @@
  * IN THE SOFTWARE.
  **/
 
-#include "./isort.c"
+#include "./isort.h"
 #include "./util.h"
 
+
+// ******************** Prototypes for static functions *********************
 
 // A merge routine. Merges the sub-arrays A [start...mid] and A [mid+1 ... end].
 // Allocates extra scratch space 'left' to merge the subarrays.
 static inline void merge_m(data_t* arr, int start, int mid, int end);
 
-// Copy values from source to destination. 
+// Copy values from source to destination.
 static inline void copy_m(data_t* src, data_t* dest, int n);
 
+// ******************************* Functions ********************************
 
-// A basic merge sort routine that sorts the subarray A[start ... end]
 void sort_m(data_t* arr, int start, int end) {
   assert(arr);
   // In practice, merge sort is slow for small array sizes. Using faster sorting
@@ -66,23 +68,23 @@ static inline void merge_m(data_t* arr, int start, int mid, int end) {
   left[n_left] = UINT_MAX;
 
   unsigned int* arrptr = &(arr[start]);
-	unsigned int* leftptr = left;
-	unsigned int* rightptr = &(arr[mid+1]);
+  unsigned int* leftptr = left;
+  unsigned int* rightptr = &(arr[mid+1]);
 
   while (n_left > 0 && n_right > 0) {
     long cmp = (*leftptr <= *rightptr);
-	  long min = *rightptr ^ ((*leftptr ^ *rightptr) & -(cmp));
+    long min = *rightptr ^ ((*leftptr ^ *rightptr) & -(cmp));
 
     *arrptr++ = min;
-	  leftptr += cmp; n_left -= cmp;
-	  rightptr += !cmp; n_right -= !cmp;
+    leftptr += cmp; n_left -= cmp;
+    rightptr += !cmp; n_right -= !cmp;
   }
 
   while (n_left > 0) {
-	  *arrptr++ = *leftptr;
-	  n_left--;
-	}
-  
+    *arrptr++ = *leftptr;
+    n_left--;
+  }
+
   mem_free(&left);
 }
 

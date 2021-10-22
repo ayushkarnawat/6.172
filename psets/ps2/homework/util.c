@@ -20,6 +20,7 @@
  * IN THE SOFTWARE.
  **/
 
+#include <stdio.h>
 
 #include "./util.h"
 

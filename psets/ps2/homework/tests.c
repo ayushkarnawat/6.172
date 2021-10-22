@@ -114,9 +114,7 @@ static inline int post_process(data_t* data, data_t* data_bcup, int N,
   return result;
 }
 
-static
-void
-init_data(data_t* data, int N, int randomPrefix, int invertedSuffix) {
+static void init_data(data_t* data, int N, int randomPrefix, int invertedSuffix) {
   // initialize data with randomPrefix random numbers
   assert(randomPrefix <= N);
   /* random prefix */

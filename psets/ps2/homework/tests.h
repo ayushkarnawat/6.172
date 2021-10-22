@@ -13,6 +13,13 @@ struct testFunc_t {
 #define RANGE_BITS 31
 #define RANGE (1U << RANGE_BITS)
 
-typedef void (*test_case)(int printFlag, int N, int R, struct testFunc_t* testFunc, int numFunc);
+typedef void (*test_case)
+(
+  int printFlag,
+  int N,
+  int R,
+  struct testFunc_t* testFunc,
+  int numFunc
+);
 
 #endif  // TESTS_H
