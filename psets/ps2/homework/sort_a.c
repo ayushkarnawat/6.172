@@ -20,14 +20,20 @@
  * IN THE SOFTWARE.
  **/
 
-
 #include "./util.h"
 
-// Function prototypes
+
+// ******************** Prototypes for static functions *********************
+
+// A merge routine. Merges the sub-arrays A [p..q] and A [q + 1..r].
+// Uses two arrays 'left' and 'right' in the merge operation.
 static void merge_a(data_t* A, int p, int q, int r);
+
+// Copy values from source to destination
 static void copy_a(data_t* source, data_t* dest, int n);
 
-// A basic merge sort routine that sorts the subarray A[p..r]
+// ******************************* Functions ********************************
+
 void sort_a(data_t* A, int p, int r) {
   assert(A);
   if (p < r) {
@@ -38,8 +44,6 @@ void sort_a(data_t* A, int p, int r) {
   }
 }
 
-// A merge routine. Merges the sub-arrays A [p..q] and A [q + 1..r].
-// Uses two arrays 'left' and 'right' in the merge operation.
 static void merge_a(data_t* A, int p, int q, int r) {
   assert(A);
   assert(p <= q);
@@ -47,7 +51,7 @@ static void merge_a(data_t* A, int p, int q, int r) {
   int n1 = q - p + 1;
   int n2 = r - q;
 
-  data_t* left = 0, * right = 0;
+  data_t *left = 0, *right = 0;
   mem_alloc(&left, n1 + 1);
   mem_alloc(&right, n2 + 1);
   if (left == NULL || right == NULL) {

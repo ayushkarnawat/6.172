@@ -20,9 +20,11 @@
  * IN THE SOFTWARE.
  **/
 
-#include "./isort.c"
+#include "./isort.h"
 #include "./util.h"
 
+
+// ******************** Prototypes for static functions *********************
 
 // A merge routine. Merges the sub-arrays A [p..q] and A [q + 1..r].
 // Uses two arrays 'left' and 'right' in the merge operation.
@@ -31,15 +33,14 @@ static inline void merge_c(data_t* A, int p, int q, int r);
 // Copy values from source to destination. 
 static inline void copy_c(data_t* source, data_t* dest, int n);
 
+// ******************************* Functions ********************************
 
-// A basic merge sort routine that sorts the subarray A[p..r]
 void sort_c(data_t* A, int p, int r) {
   assert(A);
   // In practice, merge sort is slow for small array sizes. As such, using
   // faster sorting techniques (i.e. insertion sort) when the array size is
-  // small (aka < 100), can make a significant improvement in the runtime of the
-  // algorithm.
-  if (r-p < 100){
+  // small (aka < 100), can make a significant improvement in the runtime.
+  if (r-p < 100) {
     isort(&(A[p]), &(A[r]));
   } else {
     int q = (p + r) / 2;
@@ -73,7 +74,7 @@ static inline void merge_c(data_t* A, int p, int q, int r) {
   int i = 0;
   int j = 0;
 
-  // access using ptrs rather than idxs, better for memory efficency
+  // access using ptrs (better memory efficency)
   for (int k = p; k <= r; k++) {
     if (*(left+i) <= *(right+j)) {
       *(A+k) = *(left+i); // A[k] = left[i]
@@ -91,7 +92,7 @@ static inline void copy_c(data_t* source, data_t* dest, int n) {
   assert(dest);
   assert(source);
 
-  // access use ptrs instead of array idxs
+  // use pointers instead of idxs
   for (int i = 0 ; i < n ; i++) {
     *(dest+i) = *(source+i);
   }

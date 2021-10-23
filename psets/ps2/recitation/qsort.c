@@ -29,7 +29,7 @@ int partition(data_t arr[], int l, int h) {
 
 /**
  * @brief Iterative quicksort.
- * 
+ *
  * @param arr Array to be sorted.
  * @param low Starting index.
  * @param high Ending index.

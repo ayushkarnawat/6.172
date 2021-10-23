@@ -44,7 +44,6 @@ static void run_test_suite(int start_idx, int printFlag, int N, int R,
   fprintf(stderr, "Done testing.\n");
 }
 
-
 extern void sort_a(data_t*, int, int);
 extern void sort_i(data_t*, int, int);
 extern void sort_p(data_t*, int, int);

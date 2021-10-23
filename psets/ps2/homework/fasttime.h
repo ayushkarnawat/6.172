@@ -20,8 +20,8 @@
  * IN THE SOFTWARE.
  **/
 
-#ifndef INCLUDED_FASTTIME_DOT_H
-#define INCLUDED_FASTTIME_DOT_H
+#ifndef FASTTIME_H
+#define FASTTIME_H
 
 #define _POSIX_C_SOURCE 200809L
 
@@ -44,8 +44,12 @@ static inline fasttime_t gettime(void) {
 // https://developer.apple.com/library/mac/qa/qa1398/_index.html
 static inline double tdiff(fasttime_t start, fasttime_t end) {
   static mach_timebase_info_data_t timebase;
+#ifdef NDEBUG
+  mach_timebase_info(&timebase);
+#else
   int r = mach_timebase_info(&timebase);
   assert(r == 0);
+#endif
   fasttime_t elapsed = end - start;
   double ns = (double)elapsed * timebase.numer / timebase.denom;
   return ns * 1e-9;
@@ -94,4 +98,4 @@ time_t time(time_t*) __attribute__((deprecated));
 
 #endif  // LINUX
 
-#endif  // INCLUDED_FASTTIME_DOT_H
+#endif  // FASTTIME_H

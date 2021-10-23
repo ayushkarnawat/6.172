@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 typedef uint32_t data_t;
-const int U = 1000;   // size of the array. 10 million vals ~= 40MB
-const int N = 10000;  // number of searches to perform
+const int U = 1000000;   // size of the array. 10 million vals ~= 40MB
+const int N = 100000;  // number of searches to perform
 
 int main() {
   data_t* data = (data_t*) malloc(U * sizeof(data_t));
@@ -16,7 +16,7 @@ int main() {
     exit(-1);
   }
 
-  // fill up the array with sequential (sorted) values.
+  // fill up array with sequential (sorted) values.
   for (int i = 0; i < U; i++) {
     data[i] = i;
   }

@@ -20,9 +20,10 @@
  * IN THE SOFTWARE.
  **/
 
-
 #include "./util.h"
 
+
+// ******************** Prototypes for static functions *********************
 
 // A merge routine. Merges the sub-arrays A [p..q] and A [q + 1..r].
 // Uses two arrays 'left' and 'right' in the merge operation.
@@ -31,8 +32,8 @@ static inline void merge_i(data_t* A, int p, int q, int r);
 // Copies values from source to the destination.
 static inline void copy_i(data_t* source, data_t* dest, int n);
 
+// ******************************* Functions ********************************
 
-// A basic merge sort routine that sorts the subarray A[p..r]
 void sort_i(data_t* A, int p, int r) {
   assert(A);
   if (p < r) {
