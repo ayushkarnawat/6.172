@@ -61,7 +61,7 @@ ifeq ($(DEBUG),1)
   endif
 else ifeq ($(ASAN),1)
   CFLAGS := $(CFLAGS_ASAN) $(CFLAGS)
-  LDFLAGS := $(LDFLAGS) -fsanitize=address
+  LDFLAGS += -fsanitize=address
   ifneq ($(OLDMODE),asan)
     $(shell echo asan > .buildmode)
   endif

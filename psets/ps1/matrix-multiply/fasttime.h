@@ -42,8 +42,12 @@ static inline fasttime_t gettime(void) {
 // https://developer.apple.com/library/mac/qa/qa1398/_index.html
 static inline double tdiff(fasttime_t start, fasttime_t end) {
   static mach_timebase_info_data_t timebase;
+#ifdef NDEBUG
+  mach_timebase_info(&timebase);
+#else
   int r = mach_timebase_info(&timebase);
   assert(r == 0);
+#endif
   fasttime_t elapsed = end-start;
   double ns = (double) elapsed * timebase.numer / timebase.denom;
   return ns*1e-9;

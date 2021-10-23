@@ -38,17 +38,14 @@
 
 matrix_t* make_matrix(int rows, int cols) {
   matrix_t* m = (matrix_t*) malloc(sizeof(matrix_t));
-
-  // Set the number of rows and columns
   m->rows = rows;
   m->cols = cols;
 
-  // Allocate a buffer big enough to hold the matrix.
+  // allocate big enough buffer to hold the matrix
   m->values = (int**) malloc(sizeof(int*) * rows);
   for (int i = 0; i < rows; i++) {
     m->values[i] = (int*) malloc(sizeof(int) * cols);
   }
-
   return m;
 }
 

@@ -24,7 +24,6 @@
 /**
  * Matrix Multiply
  *
- *
  * Declarations here are your API specification -- we expect that your
  * code defines and correctly implements these functions and does not modify
  * the way the reference implementation uses variables mentioned here,
