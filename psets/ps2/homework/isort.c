@@ -20,18 +20,9 @@
  * IN THE SOFTWARE.
  **/
 
-// #include <stdio.h>
-// #include <stdint.h>
-// #include <stdlib.h>
-
 #include "./isort.h"
 
-/**
- * @brief Insertion sort array from beginning to end, inclusively.
- *
- * @param begin Pointer to first element in array.
- * @param end Pointer to last element in array.
- */
+
 void isort(data_t* begin, data_t* end) {
   data_t* cur = begin + 1;
   while (cur <= end) {

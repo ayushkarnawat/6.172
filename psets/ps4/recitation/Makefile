@@ -1,6 +1,6 @@
 CC := clang
 
-TARGETS = fib transpose qsort
+TARGETS = fib qsort transpose
 
 # CFLAGS := -Wall -g -std=gnu11
 CFLAGS:= -Wall -Wextra -Wfloat-equal -Wundef -Wcast-align -Wwrite-strings \

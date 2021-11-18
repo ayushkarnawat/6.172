@@ -58,8 +58,8 @@ ifeq ($(DEBUG),1)
 endif
 
 # echo $[1<<22]
-huge:SIZE=262144
-huge:sort
+huge: SIZE=262144
+huge: sort
 	./sort ${SIZE} 2
 
 # stat:sort

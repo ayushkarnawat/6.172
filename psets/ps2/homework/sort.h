@@ -22,9 +22,41 @@ void sort_a(data_t* arr, int start, int end);
  * @param end End index.
  */
 void sort_i(data_t* arr, int start, int end);
+
+/**
+ * @brief Merge sort using pointers.
+ *
+ * @param arr Pointer to array to be sorted.
+ * @param start Starting index.
+ * @param end End index.
+ */
 void sort_p(data_t* arr, int start, int end);
+
+/**
+ * @brief Merge sort with insertion sort coarsening.
+ *
+ * @param arr Pointer to array to be sorted.
+ * @param start Starting index.
+ * @param end End index.
+ */
 void sort_c(data_t* arr, int start, int end);
+
+/**
+ * @brief Merge sort with reduced local temp memory use.
+ *
+ * @param arr Pointer to array to be sorted.
+ * @param start Starting index.
+ * @param end End index.
+ */
 void sort_m(data_t* arr, int start, int end);
+
+/**
+ * @brief Merge sort with global memory allocation.
+ *
+ * @param arr Pointer to array to be sorted.
+ * @param start Starting index.
+ * @param end End index.
+ */
 void sort_f(data_t* arr, int start, int end);
 
 #endif  // SORT_H

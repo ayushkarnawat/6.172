@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
 
   // Use only as many threads as are available
   #ifdef _OPENMP
-    omp_set_num_threads(omp_get_num_procs());
+  omp_set_num_threads(omp_get_num_procs());
   #endif
 
   // Privatizes i, and lets each thread compute "round robin"-style, thus
