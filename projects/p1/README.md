@@ -1,6 +1,6 @@
 # Everybit (Bit Hacks)
 Fast bit rotator. Rotates a string of bits within a bit array by a specified
-amount to the left or right.  
+amount to the left or right. 
 
 ## Methods
 Instead of rotating the bits one-by-one to the left or right to manipulate the
@@ -38,6 +38,6 @@ with 3 reversals of bit strings, the string can be rotated.
 
 ## Tests
 We have added a test suite that runs through everybit's API and ensures all
-functions are working as expected. These tests are accessible in tests/mytests.
-The command `make testquiet` will build the test program and run the unit
-(correctness) and performance (speed) tests.
+functions are working as expected. These tests are accessible in
+data/mytests. The command `make testquiet` will build the test program and
+run the unit (correctness) and performance (speed) tests.

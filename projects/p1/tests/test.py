@@ -20,8 +20,6 @@ import time
 GREEN = '\033[92;1m'
 RED = '\033[91;1m'
 END = '\033[0m'
-
-
 QUIET = False
 
 def print_result(result):
@@ -59,6 +57,7 @@ def wait_for_test_process(proc, timeout):
         chunk = os.read(proc.stderr.fileno(), 4096)
         err_chunks.append(chunk)
     lines = b''.join(err_chunks).decode("utf-8").split('\n')
+    lines.append('Done testing')
     return (timed_out, lines)
 
 
@@ -68,7 +67,7 @@ def test_project1(binary):
     Apologies for the complicatedness of the testing protocol, and also of how
     hard it is to properly run a process with a timeout.
     """
-    testdir = os.path.join(os.path.dirname(binary), 'tests')
+    testdir = os.path.join(os.path.dirname(binary), 'data')
     test_files = [os.path.join(testdir, file) for file in os.listdir(testdir)]
 
     num_passed = 0
@@ -104,7 +103,7 @@ def test_project1(binary):
                 # NOTE(TFK): Added 'or' to print failed tests.
                 if not QUIET or (QUIET and not passed):
                     testname = os.path.basename(binary) + ' ' + match.group(1)
-                    print(testname.ljust(64), print_result(passed))
+                    print(testname.ljust(64)), print_result(passed)
                 if not passed:
                     print(lines[lineIndex])
                     lineIndex += 1
@@ -129,7 +128,7 @@ def test_project1(binary):
     # NOTE(TFK): No need for this when we're printing failed tests above.
     if QUIET and False:
         testname = os.path.basename(binary)
-        print(testname.ljust(64), print_result(num_failed == 0))
+        print(testname.ljust(64)), print_result(num_failed == 0)
 
     return (test_index_total, num_passed, num_failed)
 

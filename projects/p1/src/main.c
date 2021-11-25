@@ -22,15 +22,13 @@
 
 // This test harness which allows both functional testing (i.e., testing for
 // correctness) and performance testing (i.e., testing for speed).
-
-// We need _POSIX_C_SOURCE >= 2 to use getopt.
-#define _POSIX_C_SOURCE 200112L
+#define _POSIX_C_SOURCE 200112L // >= 2 for getopt
 
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <unistd.h>
-#include "./tests.h"
+
+#include "tests.h"
 
 
 // ******************************* Prototypes *******************************
@@ -43,7 +41,7 @@ void print_usage(const char* const argv_0);
 int main(int argc, char** argv) {
   int retval = EXIT_SUCCESS;
 
-  // Parse options.
+  // Parse options
   char optchar;
   opterr = 0;
   int selected_test = -1;
@@ -88,8 +86,8 @@ int main(int argc, char** argv) {
     }
   }
 
-  // If we made it here, we couldn't find any arguments to tell us what to
-  // do.  Go and tell the user how to actually run the program.
+  // If we made it here, we couldn't find any arguments to tell us what to do.
+  // Tell user how to actually run the program.
   print_usage(argv[0]);
   retval = EXIT_SUCCESS;
 

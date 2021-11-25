@@ -40,26 +40,37 @@
 
 // ********************************* Types **********************************
 
-// A clock time.
-typedef uint64_t clockmark_t;
+typedef uint64_t clockmark_t; // clock time
 
 
 // ******************************* Prototypes *******************************
 
-// Returns the difference between two clockmark_t in nanoseconds.  In
-// particular, returns *end - *start.
-//
-// Warning: Although the function is called ktiming_diff_usec, it returns a
-// value in nanoseconds, not microseconds!
+/**
+ * @brief Gets the current clock time.
+ */
+clockmark_t ktiming_getmark();
+
+/**
+ * @brief Compute difference (in nanoseconds) between two clockmark_t.
+ *
+ * Warning: Although the function is called ktiming_diff_usec, it returns a
+ * value in nanoseconds, not microseconds.
+ *
+ * @param start Start time.
+ * @param end End time.
+ * @return Difference (*end - *start) in nanoseconds.
+ */
 uint64_t ktiming_diff_usec(const clockmark_t* const start,
                            const clockmark_t* const end);
 
-// Returns the difference between two clockmark_t in seconds.  In
-// particular, returns *end - *start.
+/**
+ * @brief Compute difference (in seconds) between two clockmark_t.
+ *
+ * @param start Start time.
+ * @param end End time.
+ * @return Difference (*end - *start) in seconds.
+ */
 float ktiming_diff_sec(const clockmark_t* const start,
                        const clockmark_t* const end);
-
-// Gets the current clock time.
-clockmark_t ktiming_getmark();
 
 #endif  // _KTIMING_H_

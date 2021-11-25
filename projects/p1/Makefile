@@ -47,8 +47,8 @@
 
 
 # The sources we're building
-SOURCES = $(wildcard *.c)
-HEADERS = $(wildcard *.h)
+SOURCES = $(wildcard src/*.c)
+HEADERS = $(wildcard src/*.h)
 
 # What we're building
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
@@ -56,8 +56,8 @@ PRODUCT = everybit
 
 # What we're building with
 CC = clang
-CFLAGS = -std=c11 -Wall -m64 -g
-LDFLAGS = # -flto -fuse-ld=gold 
+CFLAGS = -std=c11 -Wall -m64 -g -I include/
+LDFLAGS = # -flto -fuse-ld=gold
 
 # We need to link against the timing library for whatever OS we're on.
 PLATFORM = $(shell uname)
@@ -67,53 +67,34 @@ else ifeq ($(PLATFORM),Darwin)
 	LDFLAGS += -arch x86_64 -framework CoreServices
 endif
 
-
-# Determine which profile--debug or release--we should build against, and set
-# CFLAGS appropriately.
-#
-# At this time, we also update the .buildmode stamp, which records if the last
-# build was in debug or release mode.  This is a bit hackish--we set all C
-# compiler outputs to depend on .buildmode, and then we touch .buildmode if it
-# should change.  Touching .buildmode invalidates all the compiler outputs, so
-# they all get built again in the correct mode.  Credit to Ceryen Tan and Marek
-# Olszewski, who developed this code for 6.197 back in the day.
-OLD_MODE = $(shell cat .buildmode 2> /dev/null)
 ifeq ($(DEBUG),1)
-# We want debug mode.
-CFLAGS += -O0
-ifneq ($(OLD_MODE),debug)
-$(shell echo debug >.buildmode)
-endif
+	CFLAGS += -O0
 else
-# We want release mode.
-CFLAGS += -O3 -DNDEBUG
-ifneq ($(OLD_MODE),release)
-$(shell echo release >.buildmode)
+	CFLAGS += -O3 -DNDEBUG
 endif
-endif
-
 
 # By default, make the product.
 all: $(PRODUCT)
 
 # How to compile a C file
-%.o: %.c $(HEADERS) .buildmode
+%.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -o $@ -c $<
 
 # How to link the product
-$(PRODUCT):	$(OBJECTS) .buildmode
+$(PRODUCT):	$(OBJECTS)
 	$(CC) $(OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS) -o $@
 
 # How to clean up
 clean:
-	$(RM) -rf everybit *.o .buildmode *.gcov *.gcno *.gcda *.dSYM/ cachegrind*
+	$(RM) -rf everybit *.o src/*.o .buildmode *.gcov *.gcno *.gcda *.dSYM/ cachegrind*
 
+# TODO: Remove
 # Correctness tests
 test: $(PRODUCT)
-	../test.py $(PRODUCT)
+	python tests/test.py $(PRODUCT)
 
 testquiet: $(PRODUCT)
-	../test.py --quiet $(PRODUCT)
+	python tests/test.py --quiet $(PRODUCT)
 
 # Performance tests
 testperf: $(PRODUCT)

@@ -19,18 +19,18 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  **/
+
 #define _GNU_SOURCE
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <sys/types.h>
 
-#include "./bitarray.h"
-#include "./ktiming.h"
-#include "./tests.h"
+#include "bitarray.h"
+#include "ktiming.h"
+#include "tests.h"
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -427,12 +427,3 @@ void sample_test_a() {
   printf("\n");
   bitarray_free(test);
 }
-
-// Local Variables:
-// mode: C
-// fill-column: 100
-// c-file-style: "k&r"
-// c-basic-offset: 2
-// indent-tabs-mode: nil
-// tab-width: 2
-// End:

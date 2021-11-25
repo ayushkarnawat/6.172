@@ -23,8 +23,8 @@
 #ifndef BITARRAY_H
 #define BITARRAY_H
 
-#include <sys/types.h>
 #include <stdbool.h>
+#include <sys/types.h>
 
 // ********************************* Types **********************************
 
@@ -33,53 +33,77 @@ typedef struct bitarray bitarray_t;
 
 // ******************************* Prototypes *******************************
 
-// Allocates space for a new bit array.
-// bit_sz is the number of bits storable in the resultant bit array
+/**
+ * @brief Allocates space for a bit array.
+ *
+ * @param bit_sz The number of bits storable in the resultant bit array.
+ * @return Bitarray struct representing an array of bits.
+ */
 bitarray_t* bitarray_new(const size_t bit_sz);
 
-// Frees a bit array allocated by bitarray_new.
+/**
+ * @brief Frees a bit array allocated by bitarray_new.
+ *
+ * @param bitarray Pointer to a bit array.
+ */
 void bitarray_free(bitarray_t* const bitarray);
 
-// Returns the number of bits stored in a bit array.
-// Note the invariant bitarray_get_bit_sz(bitarray_new(n)) = n.
+/**
+ * Note: the invariant bitarray_get_bit_sz(bitarray_new(n)) = n.
+ *
+ * @param bitarray Pointer to a bit array.
+ * @return Number of bits stored in a bit array.
+ */
 size_t bitarray_get_bit_sz(const bitarray_t* const bitarray);
 
-// Indexes into a bit array, retreiving the bit at the specified zero-based
-// index.
+/**
+ * @brief Indexes into a bitarray, retrieving the bit at the specified index.
+ *
+ * @param bitarray Pointer to a bitarray.
+ * @param bit_index Zero-based index.
+ * @return Value of bit at the specified bit_index.
+ */
 bool bitarray_get(const bitarray_t* const bitarray, const size_t bit_index);
 
-// Indexes into a bit array, setting the bit at the specified zero-based index.
+/**
+ * @brief Indexes into a bitarray, setting the bit at the specified index.
+ *
+ * @param bitarray Pointer to a bitarray.
+ * @param bit_index Zero-based index.
+ * @param value Value of bit.
+ */
 void bitarray_set(bitarray_t* const bitarray,
                   const size_t bit_index,
                   const bool value);
 
-// Does a random fill of all the bits in the bit array.
+/**
+ * @brief Randomly fill all bits in the bitarray.
+ *
+ * @param bitarray Pointer to a bitarray.
+ */
 void bitarray_randfill(bitarray_t* const bitarray);
 
-// Rotates a subarray.
-//
-// bit_offset is the index of the start of the subarray
-// bit_length is the length of the subarray, in bits
-// bit_right_amount is the number of places to rotate the subarray right
-//
-// The subarray spans the half-open interval
-// [bit_offset, bit_offset + bit_length)
-// That is, the start is inclusive, but the end is exclusive.
-//
-// Note: bit_right_amount can be negative, in which case a left rotation is
-// performed.
-// 
-// Example:
-// Let ba be a bit array containing the byte 0b10010110; then,
-// bitarray_rotate(ba, 0, bitarray_get_bit_sz(ba), -1)
-// left-rotates the entire bit array in place.  After the rotation, ba
-// contains the byte 0b00101101.
-//
-// Example:
-// Let ba be a bit array containing the byte 0b10010110; then,
-// bitarray_rotate(ba, 2, 5, 2) rotates the third through seventh
-// (inclusive) bits right two places.  After the rotation, ba contains the
-// byte 0b10110100.
+/**
+ * @brief Rotates a subarray.
+ *
+ * The subarray spans the half-open interval [bit_offset, bit_offset +
+ * bit_length); that is, the start is inclusive, but the end is exclusive.
+ *
+ * Note: bit_right_amount can be negative, in which case a left rotation is
+ * performed.
+ *
+ * @param bit_offset Index of the start of the subarray.
+ * @param bit_length Length of the subarray, in bits.
+ * @param bit_right_amount Number of places to rotate the subarray right.
+ *
+ * @example Let ba be a bitarray containing the byte 0b10010110; then,
+ * bitarray_rotate(ba, 0, bitarray_get_bit_sz(ba), -1) left-rotates the entire
+ * bitarray in place. After the rotation, ba contains the byte 0b00101101.
+ *
+ * @example Let ba be a bitarray containing the byte 0b10010110; then,
+ * bitarray_rotate(ba, 2, 5, 2) rotates the third through seventh (inclusive)
+ * bits right two places. After the rotation, ba contains the byte 0b10110100.
+ */
 void bitarray_rotate(bitarray_t* const bitarray,
                      const size_t bit_offset,
                      const size_t bit_length,

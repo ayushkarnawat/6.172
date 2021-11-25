@@ -49,7 +49,7 @@
   #include "mach/mach_time.h"
 #endif
 
-#include "./ktiming.h"
+#include "ktiming.h"
 
 
 // ********************************* Macros *********************************
@@ -76,16 +76,14 @@ clockmark_t ktiming_getmark() {
 
   int stat = clock_gettime(KTIMING_CLOCK_ID, &now);
   if (stat != 0) {
-    // Whoops, we couldn't get hold of the clock.  If we're on a
-    // platform that supports it, we try again with
-    // CLOCK_MONOTONIC.
+    // Whoops, we couldn't get hold of the clock.  If we're on a platform that
+    // supports it, we try again with CLOCK_MONOTONIC.
 #ifndef __CYGWIN__
     stat = clock_gettime(CLOCK_MONOTONIC, &now);
 #endif
     if (stat != 0) {
-      // Wow, we /still/ couldn't get hold of the clock.
-      // Better give up; without a clock, we can't give back
-      // meaningful statistics.
+      // Wow, we /still/ couldn't get hold of the clock. Better give up; without
+      // a clock, we can't give back meaningful statistics.
       perror("ktiming_getmark()");
       exit(-1);
     }

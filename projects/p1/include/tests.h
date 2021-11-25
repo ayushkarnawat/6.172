@@ -23,25 +23,36 @@
 #ifndef TESTS_H
 #define TESTS_H
 
-#include "./bitarray.h"
-
 #include <assert.h>
 #include <stdbool.h>
 #include <string.h>
 #include <sys/types.h>
 
+#include "./bitarray.h"
+
 
 // ******************************* Prototypes *******************************
 
-// Will run increasingly larger test cases, until a test case takes longer
-// than time_limit_seconds to complete.
+/**
+ * @brief Runs increasingly larger test cases (defined by a tier num), until a
+ * test case takes longer than time_limit_seconds to complete.
+ *
+ * @param time_limit_seconds Maximum allowed time.
+ * @return Tier number which was last successful.
+ */
 int timed_rotation(const double time_limit_seconds);
 
+/**
+ * @brief Runs the testsuite specified in a given file.
+ *
+ * @param filename Path to test file.
+ * @param selected_test Which specified test to run.
+ */
+void parse_and_run_tests(const char* filename, int selected_test);
 
-// Runs the testsuite specified in a given file.
-void parse_and_run_tests(const char* filename, int min_test);
-
+/**
+ * TODO: Remove. For testing purposes only.
+ */
 void sample_test_a();
 
 #endif  // TESTS_H
-
