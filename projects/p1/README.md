@@ -41,3 +41,8 @@ We have added a test suite that runs through everybit's API and ensures all
 functions are working as expected. These tests are accessible in
 data/mytests. The command `make testquiet` will build the test program and
 run the unit (correctness) and performance (speed) tests.
+
+## TODOs
+- [ ] Remove makefile; ported to CMake
+- [ ] Remove `sample_test_a` function; just for quickly print testing bitarray
+- [ ] Add unit tests for the other functions in the public API (bitarray)

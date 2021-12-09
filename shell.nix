@@ -1,32 +1,6 @@
-# NOTE: We need to specify a commit version in which cling is available but
-# valgrind also builds properly. A quick search on nixpkgs reveals that, at the
-# time of writing, this is impossible (as the earliest version of cling appears
-# as part of the packages after the valgrind package begins failing on
-# mac/darwin. Three things are possible:
-#
-# 1. Specify a (stable) verison of nix which has a working version of valgrind
-# and then build cling. There are build issues when running the build script.
-# Specifically, we are unable to find a "_mach_msg_destroy" within the
-# libcoregrind library (requires some help from upstream developers).
-#
-# 2. Specify a version with working cling, and rebuilt valgrind. Installing
-# cling with the working version of valgrind (on BigSur) results in us not being
-# able to find the *.dylib libraries (as they are no longer searchable in the
-# system). An idea: Modify cling script such that it can find dylib files using
-# dlopen rather than finding file directly within system.
-#
-# 3. Install valgrind and forget about cling. We could argue that optimizing
-# performance (through cachegrind) is more important than being able to have a
-# cpp interpreter for quickly testing things. This is not really a fix as we are
-# side stepping having the ability to use both on a BigSur machine, especially
-# because they are both are important for a proper development experience.
-# Gameplan: Specify differences between old working cling and new one and what
-# changed. We may need to (re)build an old version of llvm with dev (among other
-# pkgs) as cling requies this.
-
 { nixpkgs ? import (
   fetchTarball {
-    name = "darwin-21.08";
+    name = "nixpkgs-21.08";
     url = "https://github.com/nixos/nixpkgs/archive/" +
       "fbafeb7ad5dd6196fcc5d84264e1706653a62f81.tar.gz";
     sha256 = "1kvx8j1z0xwfqjh33l3plhjc6dkjdg5md6zg667abdi06sg9w8pk";
@@ -78,15 +52,19 @@ let
   };
 in
 nixpkgs.mkShell {
-  name = "cpp-shell";
   buildInputs = [
     # cpu/memory profiling
     pprof
     graphviz
     gperftools
-    cling # c/cpp shell
-    llvmPackages_12.llvm # llvm-symbolizer
-    llvmPackages_12.clang # core header libs
+
+    # c/c++ tooling, libs, pkgs
+    cling                   # c/cpp shell
+    cmake                   # meta buildsystem
+    llvmPackages_12.clang   # core header libs
+    llvmPackages_12.llvm    # llvm-symbolizer
+    llvmPackages_12.openmp  # openmp
+
     # apple specific libs
     darwin.apple_sdk.frameworks.CoreFoundation
     darwin.apple_sdk.frameworks.CoreServices

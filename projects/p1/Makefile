@@ -48,7 +48,7 @@
 
 # The sources we're building
 SOURCES = $(wildcard src/*.c)
-HEADERS = $(wildcard src/*.h)
+HEADERS = $(wildcard include/*.h src/*.h)
 
 # What we're building
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
