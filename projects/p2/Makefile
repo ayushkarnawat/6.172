@@ -44,18 +44,18 @@
 
 
 # The sources we're building
-HEADERS = $(wildcard *.h)
-PRODUCT_SOURCES = $(filter-out graphic_stuff.c, $(wildcard *.c))
+HEADERS = $(wildcard include/*.h src/*.h extra/*.h)
+PRODUCT_SOURCES = $(filter-out extra/graphic_stuff.c, $(wildcard src/*.c extra/*.c))
 
 # What we're building
 PRODUCT_OBJECTS = $(PRODUCT_SOURCES:.c=.o)
 PRODUCT = screensaver
-PROFILE_PRODUCT = $(PRODUCT:%=%.prof) #the product, instrumented for gprof
+PROFILE_PRODUCT = $(PRODUCT:%=%.prof) # the product, instrumented for gprof
 
 # What we're building with
 CXX = clang
-CXXFLAGS = -std=gnu99 -Wall -ftapir
-LDFLAGS = -lrt -lm -lcilkrts
+CXXFLAGS = -std=gnu99 -Wall -m64 -I include/ -I extra/ #-ftapir
+LDFLAGS = -lm #-lcilkrts -lrt
 
 include ./cilkutils.mk
 
@@ -83,7 +83,7 @@ lint:
 
 # How to clean up
 clean:
-	$(RM) $(PRODUCT) $(PROFILE_PRODUCT) *.o *.out
+	$(RM) $(PRODUCT) $(PROFILE_PRODUCT) *.o src/*.o extra/*.o *.out
 
 
 # How to compile a C file
@@ -92,8 +92,8 @@ clean:
 
 # How to link the product
 $(PRODUCT): LDFLAGS += -lXext -lX11
-$(PRODUCT):	$(PRODUCT_OBJECTS) graphic_stuff.o
-	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) -o $@ $(PRODUCT_OBJECTS) graphic_stuff.o
+$(PRODUCT):	$(PRODUCT_OBJECTS) extra/graphic_stuff.o
+	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) -o $@ $(PRODUCT_OBJECTS) extra/graphic_stuff.o
 
 # How to build the product, instrumented for profiling
 $(PROFILE_PRODUCT): CXXFLAGS += -DPROFILE_BUILD -pg

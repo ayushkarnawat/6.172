@@ -20,14 +20,13 @@
  * SOFTWARE.
  **/
 
-#include "./graphic_stuff.h"
-
-#include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "./line.h"
-#include "./line_demo.h"
+#include "graphic_stuff.h"
+#include "line.h"
+#include "line_demo.h"
 
 static LineDemo *gLineDemo = NULL;
 XSegment *segments = NULL;
@@ -209,6 +208,11 @@ static void graphicInit(int *argc, char *argv[]) {
     exit(1);
   }
 
+  // printf("host: %s\n", host);
+  // Display* disp = XOpenDisplay(host);
+  // int screen_num = DefaultScreen(disp);
+  // printf("%d\n", DisplayWidth(disp, screen_num));
+  // printf("disp: %s\n", disp->xdefaults);
   if (!(display = XOpenDisplay(host))) {
     perror("XOpenDisplay");
     exit(1);

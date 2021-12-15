@@ -1,4 +1,4 @@
-/** 
+/**
  * collision_world.c -- detect and handle line segment intersections
  * Copyright (c) 2012 the Massachusetts Institute of Technology
  *
@@ -18,19 +18,19 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE. 
+ * SOFTWARE.
  **/
 
-#include "./collision_world.h"
-
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "./intersection_detection.h"
-#include "./intersection_event_list.h"
-#include "./line.h"
+#include "collision_world.h"
+#include "intersection_detection.h"
+#include "intersection_event_list.h"
+#include "line.h"
+
 
 CollisionWorld* CollisionWorld_new(const unsigned int capacity) {
   assert(capacity > 0);

@@ -24,8 +24,8 @@
 #ifndef LINEDEMO_H_
 #define LINEDEMO_H_
 
-#include "./line.h"
-#include "./collision_world.h"
+#include "collision_world.h"
+#include "line.h"
 
 struct LineDemo {
   // Iteration counter

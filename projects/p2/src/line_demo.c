@@ -1,4 +1,4 @@
-/** 
+/**
  * LineDemo.c -- main driver for the line simulation
  * Copyright (c) 2012 the Massachusetts Institute of Technology
  *
@@ -21,15 +21,14 @@
  * SOFTWARE.
  **/
 
-#include "./line_demo.h"
-
-#include <time.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
-#include "./graphic_stuff.h"
-#include "./line.h"
+// #include "graphic_stuff.h"
+#include "line.h"
+#include "line_demo.h"
 
 static char* LineDemo_input_file_path;
 

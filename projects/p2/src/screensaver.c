@@ -20,23 +20,22 @@
  * SOFTWARE.
  **/
 
+// #include <cilk/cilk.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <cilk/cilk.h>
 
-
-#include "./fasttime.h"
-#include "./line.h"
-#include "./line_demo.h"
-#include "./cilktool.h"
+// #include "cilktool.h"
+#include "fasttime.h"
+#include "line.h"
+#include "line_demo.h"
 
 // The PROFILE_BUILD preprocessor define is used to indicate we are building for
 // profiling, so don't include any graphics or Cilk functions.
 #ifndef PROFILE_BUILD
-#include "./graphic_stuff.h"
+#include "graphic_stuff.h"
 #endif
-static char* DEFAULT_INPUT_FILE_PATH = "input/mit.in";
+static char* DEFAULT_INPUT_FILE_PATH = "data/mit.in";
 static char* input_file_path;
 
 // For non-graphic version

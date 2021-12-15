@@ -20,10 +20,10 @@
  * SOFTWARE.
  **/
 
-#include "./intersection_event_list.h"
-
 #include <assert.h>
 #include <stdlib.h>
+
+#include "intersection_event_list.h"
 
 int IntersectionEventNode_compareData(IntersectionEventNode* node1,
                                       IntersectionEventNode* node2) {

@@ -20,12 +20,11 @@
  * SOFTWARE.
  **/
 
-#include "./intersection_detection.h"
-
 #include <assert.h>
 
-#include "./line.h"
-#include "./vec.h"
+#include "intersection_detection.h"
+#include "line.h"
+#include "vec.h"
 
 // Detect if lines l1 and l2 will intersect between now and the next time step.
 IntersectionType intersect(Line *l1, Line *l2, double time) {
