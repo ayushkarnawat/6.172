@@ -80,11 +80,9 @@ prof: $(PROFILE_PRODUCT)
 lint:
 	python ../../clint.py *.h *.c
 
-
 # How to clean up
 clean:
-	$(RM) $(PRODUCT) $(PROFILE_PRODUCT) *.o src/*.o extras/*.o *.out
-
+	$(RM) -rf $(PRODUCT) $(PROFILE_PRODUCT) src/*.o extras/*.o *.out *.dSYM *.prof
 
 # How to compile a C file
 %.o: %.c $(HEADERS)
@@ -96,7 +94,11 @@ $(PRODUCT):	$(PRODUCT_OBJECTS) extras/graphic_stuff.o
 	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) -o $@ $(PRODUCT_OBJECTS) extras/graphic_stuff.o
 
 # How to build the product, instrumented for profiling
-$(PROFILE_PRODUCT): CXXFLAGS += -DPROFILE_BUILD -pg
-$(PROFILE_PRODUCT): LDFLAGS += -pg
+$(PROFILE_PRODUCT): CXXFLAGS += -DPROFILE_BUILD -g -fno-omit-frame-pointer
+$(PROFILE_PRODUCT): LDFLAGS += -lprofiler
 $(PROFILE_PRODUCT): $(PRODUCT_OBJECTS)
 	$(CXX)  $(PRODUCT_OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS) -o $(PROFILE_PRODUCT)
+	dsymutil screensaver.prof
+	CPUPROFILE=collisions.prof ./screensaver.prof 1000
+	PPROF_BINARY_PATH=./
+	pprof -lines '.*' collisions.prof
