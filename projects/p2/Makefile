@@ -44,8 +44,8 @@
 
 
 # The sources we're building
-HEADERS = $(wildcard include/*.h src/*.h extras/*.h)
-PRODUCT_SOURCES = $(filter-out extras/graphic_stuff.c, $(wildcard src/*.c extras/*.c))
+HEADERS = $(wildcard include/*.h src/*.h)
+PRODUCT_SOURCES = $(wildcard src/*.c)
 
 # What we're building
 PRODUCT_OBJECTS = $(PRODUCT_SOURCES:.c=.o)
@@ -54,22 +54,29 @@ PROFILE_PRODUCT = $(PRODUCT:%=%.prof) # the product, instrumented for gprof
 
 # What we're building with
 CXX = clang
-CXXFLAGS = -std=gnu99 -Wall -m64 -I include/ -I extras/ #-ftapir
+CXXFLAGS = -std=gnu99 -Wall -m64 -I include/ #-ftapir
 LDFLAGS = -lm #-lcilkrts -lrt
 
 include ./cilkutils.mk
 
 # Determine which profile--debug or release--we should build against, and set
 # CFLAGS appropriately.
-
 ifeq ($(DEBUG),1)
-  # We want debug mode.
-  CXXFLAGS += -g -O0 -gdwarf-3
+CXXFLAGS += -g -O0 -gdwarf-3
 else
-  # We want release mode.
-  CXXFLAGS += -O3 -DNDEBUG
+CXXFLAGS += -O3 -DNDEBUG
 endif
 
+# Make graphics optional; users might not have X11 installed and/or they don't
+# want to increase size of the binary if it not going to be used.
+ifeq ($(GRAPHICS),1)
+HEADERS += $(filter-out extras/cilktool.h, $(wildcard extras/*.h))
+PRODUCT_OBJECTS += extras/graphic_stuff.o
+CXXFLAGS += -I extras/
+LDFLAGS += -lXext -lX11
+else
+CXXFLAGS += -DPROFILE_BUILD
+endif
 
 # By default, make the product.
 all: $(PRODUCT)
@@ -89,9 +96,8 @@ clean:
 	$(CXX) $(CXXFLAGS) $(EXTRA_CXXFLAGS) -o $@ -c $<
 
 # How to link the product
-$(PRODUCT): LDFLAGS += -lXext -lX11
-$(PRODUCT):	$(PRODUCT_OBJECTS) extras/graphic_stuff.o
-	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) -o $@ $(PRODUCT_OBJECTS) extras/graphic_stuff.o
+$(PRODUCT):	$(PRODUCT_OBJECTS)
+	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) -o $@ $(PRODUCT_OBJECTS)
 
 # How to build the product, instrumented for profiling
 $(PROFILE_PRODUCT): CXXFLAGS += -DPROFILE_BUILD -g -fno-omit-frame-pointer

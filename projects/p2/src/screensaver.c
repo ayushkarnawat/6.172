@@ -31,7 +31,7 @@
 #include "line_demo.h"
 
 // The PROFILE_BUILD preprocessor define is used to indicate we are building for
-// profiling, so don't include any graphics or Cilk functions.
+// profiling, so don't include any graphics functions.
 #ifndef PROFILE_BUILD
 #include "graphic_stuff.h"
 #endif
@@ -50,9 +50,7 @@ void lineMain(LineDemo *lineDemo) {
 
 int main(int argc, char *argv[]) {
   int optchar;
-#ifndef PROFILE_BUILD
   bool graphicDemoFlag = false;
-#endif
   unsigned int numFrames = 1;
   extern int optind;
 
@@ -60,9 +58,7 @@ int main(int argc, char *argv[]) {
   while ((optchar = getopt(argc, argv, "gi")) != -1) {
     switch (optchar) {
       case 'g':
-#ifndef PROFILE_BUILD
         graphicDemoFlag = true;
-#endif
         break;
       default:
         printf("Ignoring unrecognized option: %c\n", optchar);
@@ -102,13 +98,16 @@ int main(int argc, char *argv[]) {
   const fasttime_t start_time = gettime();
 
 #ifndef PROFILE_BUILD
-  // Run demo.
   if (graphicDemoFlag) {
     graphicMain(argc, argv, lineDemo, false);
   } else {
     lineMain(lineDemo);
   }
 #else
+  if (graphicDemoFlag) {
+    fprintf(stderr, "The executable was not compiled with graphics enabled. Please "
+      "recompile with X11 to enable graphics; running non-GUI demo...\n");
+  }
   lineMain(lineDemo);
 #endif
 

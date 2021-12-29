@@ -59,13 +59,19 @@ nixpkgs.mkShell {
     gperftools
 
     # c/c++ tooling, libs, pkgs
-    cling                   # c/cpp shell
+    cling                   # c/cpp repl
     cmake                   # meta buildsystem
     llvmPackages_12.clang   # core header libs
     llvmPackages_12.llvm    # llvm-symbolizer
     llvmPackages_12.openmp  # openmp
 
-    # apple specific libs
+    # graphics
+    xorg.libX11
+    xorg.libXext
+    xorg.xorgserver
+    xquartz # darwin
+
+    # apple specific
     darwin.apple_sdk.frameworks.CoreFoundation
     darwin.apple_sdk.frameworks.CoreServices
   ];
@@ -90,5 +96,11 @@ nixpkgs.mkShell {
     pprof_dir=$(ls -l /nix/store/ | grep ${pprof.pname + "-" + pprof.version} \
       | grep '^d' | awk '/ / {print $NF}')
     export PATH="/nix/store/$pprof_dir/bin:$PATH"
+
+    xquartz_dir=$(ls -l /nix/store/ | grep ${xquartz.pname + "-" +
+      xquartz.version} | grep '^d' | awk '/ / {print $NF}')
+    if [ "$(uname)" = "Darwin" -a -f /nix/store/$xquartz_dir/etc/X11/fonts.conf ]; then
+      export FONTCONFIG_FILE=/nix/store/$xquartz_dir/etc/X11/fonts.conf
+    fi
   '';
 }
