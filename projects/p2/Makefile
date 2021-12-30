@@ -54,10 +54,8 @@ PROFILE_PRODUCT = $(PRODUCT:%=%.prof) # the product, instrumented for gprof
 
 # What we're building with
 CXX = clang
-CXXFLAGS = -std=gnu99 -Wall -m64 -I include/ #-ftapir
-LDFLAGS = -lm #-lcilkrts -lrt
-
-include ./cilkutils.mk
+CXXFLAGS = -std=gnu99 -Wall -m64 -I include/
+LDFLAGS = -lm #-lrt
 
 # Determine which profile--debug or release--we should build against, and set
 # CFLAGS appropriately.

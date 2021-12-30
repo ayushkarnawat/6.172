@@ -20,12 +20,10 @@
  * SOFTWARE.
  **/
 
-// #include <cilk/cilk.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-// #include "cilktool.h"
 #include "fasttime.h"
 #include "line.h"
 #include "line_demo.h"
@@ -125,9 +123,6 @@ int main(int argc, char *argv[]) {
 
   // delete objects
   LineDemo_delete(lineDemo);
-#ifdef CILKSCALE
-  print_total();
-#endif
 
   return 0;
 }
